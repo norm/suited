@@ -1,0 +1,26 @@
+# some basic security measures
+setup/full_disk_encryption.sh
+setup/password_after_screensaver.sh
+
+# setup xcode, homebrew and git
+# (this must be done before any repos or brewfiles can be used)
+setup/install_xcode.sh
+setup/homebrew.sh
+setup/git.sh
+
+# setup things all developers need
+team/developer.conf
+
+# setup personal things
+user/$USER/main.conf
+
+# computer specific things
+host/$HOST/main.conf
+
+# checkout things to work on
+github:this-org/suited
+github:$GITHUB_USER/dotfiles
+
+# lastly, ensure software is up to date
+# (might have to reboot after this, so do it last)
+setup/software_update.sh

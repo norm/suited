@@ -5,6 +5,7 @@
 # stop immediately on errors
 set -e
 
+SUITED_SH="$0"
 REPO_TEST_CACHE=$( mktemp -d '/tmp/suited.repotest.XXXXX' )
 CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )
 trap cleanup EXIT
@@ -238,12 +239,30 @@ function process_line {
     fi
 }
 
+function process_root_suitfile {
+    local suitfile="$1"
+
+    BASE=$(dirname "$suitfile")
+    process_suitfile $(basename "$suitfile")
+}
+
 function process_suitfile {
     local suitfile=$( resolve_filename "$1" )
     local filename
     local line
     local tempfile
     local usefile
+
+    case "$1" in
+        http:*|https:*|/*)
+            # process absolute path suitfiles as a new root suitfile
+            # (absolute paths reset BASE)
+            $BASH $SUITED_SH "$1"
+            return
+            ;;
+        *)  # do nothing
+            ;;
+    esac
 
     case "$suitfile" in
         http:*|https:*)
@@ -297,16 +316,15 @@ function process_suitfile {
 
 
 # first, check we can sudo
-echo "Checking you can sudo..."
+[ -z "$IN_SUITED" ] && \
+    echo "Checking you can sudo, enter password if prompted..."
+
 sudo -v || {
     echo "suited.sh needs sudo access"
     exit 1
 }
 
-# what is the base location for finding files?
-# command-line takes precedence over environment, environment over default
-BASE="${BASE:=.}"
-[ -n "$1" ] && \
-    BASE="$1"
-
-process_suitfile "main.conf"
+export IN_SUITED=1
+for file in "$@"; do
+    process_root_suitfile "$file"
+done

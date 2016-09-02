@@ -5,6 +5,10 @@
 # stop immediately on errors
 set -e
 
+REPO_TEST_CACHE=$( mktemp -d '/tmp/suited.repotest.XXXXX' )
+CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )
+trap cleanup EXIT
+
 # where to checkout github repos to? (defaults to "~/Code/user/repo")
 REPO_DIR="${REPO_DIR:=${HOME}/Code}"
 
@@ -33,6 +37,10 @@ function error {
     printf "${bold}${magenta}--- ${1}${reset}\n"
 }
 
+function cleanup {
+    rm -rf $REPO_TEST_CACHE $CURL_TEMP_FILE
+}
+
 function accept_xcode_license {
     if /usr/bin/xcrun clang 2>&1 | grep license; then
         status 'need to accept the Xcode license'
@@ -59,6 +67,77 @@ function resolve_filename {
     esac
 }
 
+function resolve_public_github_url {
+    local user=$( echo "$1" | awk -F/ '{ print $4 }' )
+    local repo=$( echo "$1" | awk -F/ '{ print $5 }' )
+    local base="https:..github.com.$user.$repo"
+    local file=$( echo "$1" | sed -e "s/^${base}.//" )
+
+    echo "https://raw.githubusercontent.com/$user/$repo/master/$file"
+}
+
+function resolve_private_github_url {
+    local user=$( echo "$1" | awk -F/ '{ print $4 }' )
+    local repo=$( echo "$1" | awk -F/ '{ print $5 }' )
+    local base="https:..github.com.$user.$repo"
+    local file=$( echo "$1" | sed -e "s/^${base}.//" )
+
+    echo "https://api.github.com/repos/$user/$repo/contents/$file"
+}
+
+function is_public_repo {
+    local repo="$1"
+
+    # without a token, you can't see private repos anyway
+    [ -z "$GITHUB_TOKEN" ] && \
+        return 0
+
+    local user=$( echo "$repo" | awk -F/ '{ print $4 }' )
+    local name=$( echo "$repo" | awk -F/ '{ print $5 }' )
+    local cache="$REPO_TEST_CACHE/$user.$name"
+
+    [ -f "$cache.public" ] && \
+        return 0
+    [ -f "$cache.private" ] && \
+        return 1
+
+    curl -sH "Authorization: token $GITHUB_TOKEN" \
+        https://api.github.com/repos/$user/$name \
+            | grep -q 'private.*false'
+
+    if [ $? == 0 ]; then
+        touch "$cache.public"
+        return 0
+    fi
+
+    touch "$cache.private"
+    return 1
+}
+
+function fetch_url {
+    local url="$1"
+    local curlargs
+
+    case "$1" in
+        https://github.com/*)
+            if is_public_repo "$1"; then
+                url=$( resolve_public_github_url "$1" )
+            else
+                url=$( resolve_private_github_url "$1" )
+                curlargs="-H 'Authorization: token $GITHUB_TOKEN' "
+                curlargs="$curlargs -H 'Accept: application/vnd.github.v3.raw'"
+            fi
+            ;;
+
+        *)  # use as-is
+            ;;
+    esac
+
+    echo "$url"
+    eval curl --fail --progress-bar $curlargs \
+        "$url" > $CURL_TEMP_FILE
+}
+
 function process_brewfile {
     local brewfile=$( resolve_filename "$1" )
     local tempfile
@@ -66,14 +145,11 @@ function process_brewfile {
     case "$brewfile" in
         http:*|https:*)
             # fetch a remote file and process it locally
-            tempfile=$( mktemp '/tmp/suited.file.XXXXXX' )
-            curl --progress-bar --fail "$brewfile" > "$tempfile"
-            if [ $? == 0 ]; then
+            if url=$( fetch_url "$brewfile" ); then
                 action "process remote brewfile '$brewfile'"
-                brew bundle "--file=$tempfile"
-                rm -f "$tempfile"
+                brew bundle "--file=$CURL_TEMP_FILE"
             else
-                error "cannot process '$brewfile': curl failure"
+                error "cannot process '$url': curl failure"
                 return 1
             fi
             ;;
@@ -120,14 +196,11 @@ function execute_shell_script {
     case "$script" in
         http:*|https:*)
             # fetch a remote file and process it locally
-            tempfile=$( mktemp '/tmp/suited.file.XXXXXX' )
-            curl --progress-bar --fail "$script" > "$tempfile"
-            if [ $? == 0 ]; then
+            if url=$( fetch_url "$script" ); then
                 action "execute remote script '$script'"
-                source "$tempfile"
-                rm -f "$tempfile"
+                source "$CURL_TEMP_FILE"
             else
-                error "cannot execute '$script': curl failure"
+                error "cannot execute '$url': curl failure"
                 return 1
             fi
             ;;
@@ -175,13 +248,11 @@ function process_suitfile {
     case "$suitfile" in
         http:*|https:*)
             # fetch a remote file and process it locally
-            tempfile=$( mktemp '/tmp/suited.file.XXXXXX' )
-            curl --progress-bar --fail "$suitfile" > "$tempfile"
-            if [ $? == 0 ]; then
+            if url=$( fetch_url "$suitfile" ); then
                 action "process remote suitfile '$suitfile'"
-                usefile="$tempfile"
+                usefile=$CURL_TEMP_FILE
             else
-                error "cannot process '$suitfile': curl failure"
+                error "cannot process '$url': curl failure"
                 return 1
             fi
             ;;

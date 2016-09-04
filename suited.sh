@@ -22,6 +22,7 @@ HOST="${HOST:=$(hostname -s)}"
 # ANSI sequences
 bold="\e[1m"
 cyan="\e[36m"
+yellow="\e[33m"
 green="\e[32m"
 magenta="\e[35m"
 reset="\e[0m"
@@ -36,6 +37,10 @@ function status {
 
 function error {
     printf "${bold}${magenta}*** ${1}${reset}\n" >&2
+}
+
+function debug {
+    printf "${bold}${yellow}    ${1}${reset}\n" >&2
 }
 
 function cleanup {

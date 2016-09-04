@@ -422,7 +422,7 @@ function process_suitfile {
                 # commented line, ignore
                 ;;
 
-            repo *)
+            repo\ *)
                 # clone a repo and initialise it
                 local repo=$(
                     echo "$line" \

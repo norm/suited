@@ -95,6 +95,11 @@ function resolve_filename {
     local suitfile="$1"
 
     case "$suitfile" in
+        github:*)
+            # automatic github URL
+            echo $suitfile
+            ;;
+
         http:*|https:*)
             # absolute url
             echo $suitfile
@@ -105,27 +110,23 @@ function resolve_filename {
             ;;
 
         *)  # relative to the base
-            echo "${BASE}/${suitfile}"
+            echo "${BASE}${suitfile}"
             ;;
     esac
 }
 
 function resolve_public_github_url {
-    local user=$( echo "$1" | awk -F/ '{ print $4 }' )
-    local repo=$( echo "$1" | awk -F/ '{ print $5 }' )
-    local base="https:..github.com.$user.$repo"
-    local file=$( echo "$1" | sed -e "s/^${base}.//" )
+    local repo="$1"
+    local file="$2"
 
-    echo "https://raw.githubusercontent.com/$user/$repo/master/$file"
+    echo "https://raw.githubusercontent.com/$repo/master/$file"
 }
 
 function resolve_private_github_url {
-    local user=$( echo "$1" | awk -F/ '{ print $4 }' )
-    local repo=$( echo "$1" | awk -F/ '{ print $5 }' )
-    local base="https:..github.com.$user.$repo"
-    local file=$( echo "$1" | sed -e "s/^${base}.//" )
+    local repo="$1"
+    local file="$2"
 
-    echo "https://api.github.com/repos/$user/$repo/contents/$file"
+    echo "https://api.github.com/repos/$repo/contents/$file"
 }
 
 function is_public_repo {
@@ -135,9 +136,9 @@ function is_public_repo {
     [ -z "$GITHUB_TOKEN" ] && \
         return 0
 
-    local user=$( echo "$repo" | awk -F/ '{ print $4 }' )
-    local name=$( echo "$repo" | awk -F/ '{ print $5 }' )
-    local cache="$REPO_TEST_CACHE/$user.$name"
+    local filename=$( echo "$repo" | sed -e 's:/:.:' )
+    local cache="$REPO_TEST_CACHE/$filename"
+    debug "cache='$cache'"
 
     [ -f "$cache.public" ] && \
         return 0
@@ -145,7 +146,7 @@ function is_public_repo {
         return 1
 
     curl -sH "Authorization: token $GITHUB_TOKEN" \
-        https://api.github.com/repos/$user/$name \
+        https://api.github.com/repos/$repo \
             | grep -q 'private.*false'
 
     if [ $? == 0 ]; then
@@ -162,11 +163,15 @@ function fetch_url {
     local curlargs
 
     case "$1" in
-        https://github.com/*)
-            if is_public_repo "$1"; then
-                url=$( resolve_public_github_url "$1" )
+        github:*)
+            repo=$( echo "$1" | awk -F: '{ print $2 }' )
+            file=$( echo "$1" | awk -F: '{ print $3 }' )
+
+
+            if is_public_repo $repo; then
+                url=$( resolve_public_github_url "$repo" "$file" )
             else
-                url=$( resolve_private_github_url "$1" )
+                url=$( resolve_private_github_url "$repo" "$file" )
                 curlargs="-H 'Authorization: token $GITHUB_TOKEN' "
                 curlargs="$curlargs -H 'Accept: application/vnd.github.v3.raw'"
             fi
@@ -186,7 +191,7 @@ function process_brewfile {
     local tempfile
 
     case "$brewfile" in
-        http:*|https:*)
+        http:*|https:*|github:*)
             # fetch a remote file and process it locally
             if url=$( fetch_url "$brewfile" ); then
                 action "process remote brewfile '$brewfile'"
@@ -214,7 +219,7 @@ function process_gemfile {
     local tempfile
 
     case "$gemfile" in
-        http:*|https:*)
+        http:*|https:*|github:*)
             # fetch a remote file and process it locally
             if url=$( fetch_url "$gemfile" ); then
                 action "process remote gemfile '$gemfile'"
@@ -287,7 +292,7 @@ function execute_shell_script {
     local script=$( resolve_filename "$1" )
 
     case "$script" in
-        http:*|https:*)
+        http:*|https:*|github:*)
             # fetch a remote file and process it locally
             if url=$( fetch_url "$script" ); then
                 action "execute remote script '$script'"
@@ -334,10 +339,20 @@ function process_line {
 }
 
 function process_root_suitfile {
-    local suitfile="$1"
+    local suitfile
 
-    BASE=$(dirname "$suitfile")
-    process_suitfile $(basename "$suitfile")
+    case "$1" in
+        github:*)
+            BASE=$( echo "$1" | awk -F: '{ print $1 ":" $2 ":" }' )
+            suitfile=$( echo "$1" | awk -F: '{ print $3 }' )
+            ;;
+
+        *)  BASE=$(dirname "$1")"/"
+            suitfile=$(basename "$1")
+            ;;
+    esac
+
+    process_suitfile "$suitfile"
 }
 
 function process_suitfile {
@@ -348,7 +363,7 @@ function process_suitfile {
     local usefile
 
     case "$1" in
-        http:*|https:*|/*)
+        http:*|https:*|/*|github:*)
             # process absolute path suitfiles as a new root suitfile
             # (absolute paths reset BASE)
             $BASH $SUITED_SH "$1"
@@ -359,7 +374,7 @@ function process_suitfile {
     esac
 
     case "$suitfile" in
-        http:*|https:*)
+        http:*|https:*|github:*)
             # fetch a remote file and process it locally
             if url=$( fetch_url "$suitfile" ); then
                 action "process remote suitfile '$suitfile'"

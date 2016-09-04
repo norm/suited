@@ -174,26 +174,27 @@ function process_brewfile {
 
 function checkout_github_repo {
     local repo="$1"
+    local destination="$2"
     local user=$( echo "$repo" | awk -F/ '{ print $1 }' )
     local name=$( echo "$repo" | awk -F/ '{ print $2 }' )
 
-    action "checkout '$repo'"
-
-    mkdir -p "$REPO_DIR/$user"
-    pushd "$REPO_DIR/$user" >/dev/null  # unnecessarily noisy
-
-    if [ ! -d $name ]; then
-        git clone git@github.com:${repo}.git
+    if [ -z "$destination" ]; then
+        destination="${REPO_DIR}/$user/$name"
     fi
 
-    cd $name
+    action "checkout '$repo' to $destination"
 
-    [ -f Brewfile ] && \
-        process_brewfile "$REPO_DIR/$repo/Brewfile"
-    [ -f scripts/bootstrap ] && \
-        execute_shell_script "$REPO_DIR/$repo/scripts/bootstrap"
+    if [ ! -d "$destination" ]; then
+        mkdir -p "$destination"
+        git clone git@github.com:${repo}.git "$destination"
+        
+        cd "$destination"
 
-    popd >/dev/null  # unnecessarily noisy
+        [ -f Brewfile ] && \
+            process_brewfile Brewfile
+        [ -f script/bootstrap ] && \
+            execute_shell_script script/bootstrap
+    fi
 }
 
 function execute_shell_script {
@@ -304,8 +305,17 @@ function process_suitfile {
 
             github:*)
                 # checkout a repo and initialise it
-                local repo=$( echo "$line" | sed -e 's/^github://' )
-                checkout_github_repo "$repo"
+                local repo=$(
+                    echo "$line" \
+                        | awk '{ print $1 }' \
+                        | sed -e 's/^github://'
+                )
+                local destination=$(
+                    echo "$line" \
+                        | awk '{ print $2 }' \
+                        | sed -e "s:~:${HOME}:"
+                )
+                checkout_github_repo $repo "$destination"
                 echo ''
                 ;;
 

@@ -9,7 +9,15 @@ SUITED_SH="$0"
 REPO_TEST_CACHE=$( mktemp -d '/tmp/suited.repotest.XXXXX' )
 CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )
 INFO_TEMP_FILE=$( mktemp '/tmp/suited.info.XXXXX' )
+DEBUG=0
 trap cleanup EXIT
+
+while getopts "d" option; do
+    case $option in
+        d)  DEBUG=1;;
+    esac
+done
+shift $(( OPTIND - 1 ))
 
 # where to clone repos to? (defaults to "~/Code/user/repo")
 REPO_DIR="${REPO_DIR:=${HOME}/Code}"
@@ -41,7 +49,8 @@ function error {
 }
 
 function debug {
-    printf "${bold}${yellow}    ${1}${reset}\n" >&2
+    [ $DEBUG -eq 1 ] && \
+        printf "${bold}${yellow}    ${1}${reset}\n" >&2
 }
 
 function cleanup {
@@ -190,8 +199,8 @@ function fetch_url {
     esac
 
     echo "$url"
-    eval curl --fail --progress-bar $curlargs \
-        "$url" > $CURL_TEMP_FILE
+    debug "curl --fail --progress-bar $curlargs $url > $CURL_TEMP_FILE"
+    eval curl --fail --progress-bar $curlargs "$url" > $CURL_TEMP_FILE
 }
 
 function process_brewfile {

@@ -269,7 +269,6 @@ function clone_github_repo {
 
     else
         status 'already exists, skipping'
->>>>>>> eb1fccc... Alter the `github:` repo trigger to `repo`
     fi
 }
 

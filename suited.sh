@@ -11,7 +11,7 @@ CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )
 INFO_TEMP_FILE=$( mktemp '/tmp/suited.info.XXXXX' )
 trap cleanup EXIT
 
-# where to checkout github repos to? (defaults to "~/Code/user/repo")
+# where to clone repos to? (defaults to "~/Code/user/repo")
 REPO_DIR="${REPO_DIR:=${HOME}/Code}"
 
 # where is homebrew installed?
@@ -237,14 +237,12 @@ function process_gemfile {
     esac
 }
 
-function checkout_github_repo {
+function clone_github_repo {
     local repo="$1"
     local destination="$2"
-    local user=$( echo "$repo" | awk -F/ '{ print $1 }' )
-    local name=$( echo "$repo" | awk -F/ '{ print $2 }' )
 
     if [ -z "$destination" ]; then
-        destination="${REPO_DIR}/$user/$name"
+        destination="${REPO_DIR}/$repo"
     fi
 
     action "checkout '$repo' to $destination"
@@ -253,15 +251,36 @@ function checkout_github_repo {
         mkdir -p "$destination"
         git clone git@github.com:${repo}.git "$destination"
         
-        cd "$destination"
+        pushd "$destination" >/dev/null   # unnecessarily noisy
 
         [ -f Brewfile ] && \
-            process_brewfile Brewfile
+            process_brewfile "${destination}/Brewfile"
         [ -f Gemfile ] && \
-            process_gemfile Gemfile
+            process_gemfile "${destination}/Gemfile"
         [ -f script/bootstrap ] && \
-            execute_shell_script script/bootstrap
+            execute_shell_script "${destination}/script/bootstrap"
+
+        popd >/dev/null   # unnecessarily noisy
+
+    else
+        status 'already exists, skipping'
+>>>>>>> eb1fccc... Alter the `github:` repo trigger to `repo`
     fi
+}
+
+function clone_repo {
+    local source=$( echo "$1" | awk -F: '{ print $1 }' )
+    local repo=$( echo "$1" | awk -F: '{ print $2 }' )
+    local destination="$2"
+
+    case $source in
+        github)
+            clone_github_repo "$repo" "$destination"
+            ;;
+
+        *)  error "suited only understands github repos"
+            ;;
+    esac
 }
 
 function execute_shell_script {
@@ -372,20 +391,18 @@ function process_suitfile {
                 # commented line, ignore
                 ;;
 
-            github:*)
-                # checkout a repo and initialise it
+            repo *)
+                # clone a repo and initialise it
                 local repo=$(
                     echo "$line" \
-                        | awk '{ print $1 }' \
-                        | sed -e 's/^github://'
+                        | awk '{ print $2 }'
                 )
                 local destination=$(
                     echo "$line" \
-                        | awk '{ print $2 }' \
+                        | awk '{ print $3 }' \
                         | sed -e "s:~:${HOME}:"
                 )
-                checkout_github_repo $repo "$destination"
-                echo ''
+                clone_repo $repo "$destination"
                 ;;
 
             *)  process_line "$line"

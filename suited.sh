@@ -27,15 +27,15 @@ magenta="\e[35m"
 reset="\e[0m"
 
 function action {
-    printf "${green}=== ${1}${reset}\n"
+    printf "${green}=== ${1}${reset}\n" >&2
 }
 
 function status {
-    printf "${cyan}--- ${1}${reset}\n"
+    printf "${cyan}--- ${1}${reset}\n" >&2
 }
 
 function error {
-    printf "${bold}${magenta}--- ${1}${reset}\n"
+    printf "${bold}${magenta}*** ${1}${reset}\n" >&2
 }
 
 function cleanup {

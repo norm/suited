@@ -48,17 +48,19 @@ There are two approaches to using suited to setup a new Mac:
  1. Fork this repository, `cp suited.conf.example main.conf` and edit it to
     match your desired setup.
 
-    This is recommended for people using any of the `setup/` scripts that
-    don't want them to change without noticing. After all, you are 
-    trusting a third-party with root access to your computer.
+    This is really only recommended for people who need to make significant
+    changes to how the `suited.sh` script works. (Or anyone who has an
+    improvement they want to make and PR)
+
+    You can reference specific versions of the `setup/` scripts from this
+    repository using the `github:` style of inclusion in your configuration,
+    so there is no need to fork this repository to stop the files unexpectedly
+    changing.
 
  2. Create a new repository, gist, file(s) on a web server, or local file(s)
     for keeping your setups in, and refer to anything you want from this
     repository with the shorthand URLs `github:norm/suited:...`
     (like [my suit repository](https://github.com/norm/suit) does).
-
-    This is recommended for more trusting and/or lazy people who want to
-    keep their settings separate from this code.
 
 I keep my personal setup in
 [a separate repository](https://github.com/norm/suit/) from `suited` on my

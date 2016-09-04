@@ -117,16 +117,18 @@ function resolve_filename {
 
 function resolve_public_github_url {
     local repo="$1"
-    local file="$2"
+    local path="$2"
+    local rev="$3"
 
-    echo "https://raw.githubusercontent.com/$repo/master/$file"
+    echo "https://raw.githubusercontent.com/$repo/$rev/$path"
 }
 
 function resolve_private_github_url {
     local repo="$1"
-    local file="$2"
+    local path="$2"
+    local rev="$3"
 
-    echo "https://api.github.com/repos/$repo/contents/$file"
+    echo "https://api.github.com/repos/$repo/contents/$path?ref=$rev"
 }
 
 function is_public_repo {
@@ -164,14 +166,20 @@ function fetch_url {
 
     case "$1" in
         github:*)
-            repo=$( echo "$1" | awk -F: '{ print $2 }' )
-            file=$( echo "$1" | awk -F: '{ print $3 }' )
+            local repo=$( echo "$1" | awk -F: '{ print $2 }' )
+            local path=$( echo "$1" | awk -F: '{ print $3 }' )
+            local rev=$( echo "$repo" | awk -F@ '{ print $2 }' )
 
+            if [ -n "$rev" ]; then
+                repo=$( echo "$repo" | awk -F@ '{ print $1 }' )
+            else
+                rev='master'
+            fi
 
             if is_public_repo $repo; then
-                url=$( resolve_public_github_url "$repo" "$file" )
+                url=$( resolve_public_github_url "$repo" "$path" "$rev" )
             else
-                url=$( resolve_private_github_url "$repo" "$file" )
+                url=$( resolve_private_github_url "$repo" "$path" "$rev" )
                 curlargs="-H 'Authorization: token $GITHUB_TOKEN' "
                 curlargs="$curlargs -H 'Accept: application/vnd.github.v3.raw'"
             fi

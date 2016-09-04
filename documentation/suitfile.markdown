@@ -105,6 +105,13 @@ script, or suitfile) can use a relative or absolute path, or a URL.
         # ask for a password after locking the computer
         github:norm/suited:setup/password_after_screensaver.sh 
 
+    You can pin the repository to a specific revision of the file (rather than
+    using whatever is currently on `master`) by including it in the `REPO`
+    argument, like so:
+
+        # only this specific revision
+        github:norm/suited@fe24e43:setup/password_after_screensaver.sh
+
   * **relative path**
 
     Any other line is interpreted as a path relative to the last absolute

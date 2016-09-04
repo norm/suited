@@ -8,6 +8,7 @@ set -e
 SUITED_SH="$0"
 REPO_TEST_CACHE=$( mktemp -d '/tmp/suited.repotest.XXXXX' )
 CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )
+INFO_TEMP_FILE=$( mktemp '/tmp/suited.info.XXXXX' )
 trap cleanup EXIT
 
 # where to checkout github repos to? (defaults to "~/Code/user/repo")
@@ -44,13 +45,49 @@ function debug {
 }
 
 function cleanup {
-    rm -rf $REPO_TEST_CACHE $CURL_TEMP_FILE
+    local info_length=$(
+        wc -l $INFO_TEMP_FILE \
+            | awk '{ print $1 }' \
+            | sed -e 's/ //g'
+    )
+
+    if [ "$info_length" -gt 0 ]; then
+        echo ''
+        action "Post-install information:"
+        cat $INFO_TEMP_FILE
+    fi
+
+    rm -rf $REPO_TEST_CACHE $CURL_TEMP_FILE $INFO_TEMP_FILE
 }
 
 function accept_xcode_license {
     if /usr/bin/xcrun clang 2>&1 | grep license; then
         status 'need to accept the Xcode license'
         sudo xcodebuild -license
+    fi
+}
+
+function add_to_bash_profile {
+    if [ -f ${HOME}/.bash_profile.suited ]; then
+        cat >> ${HOME}/.bash_profile.suited
+    else
+        cat >> ${HOME}/.bash_profile
+    fi
+}
+
+function add_to_bashrc {
+    if [ -f ${HOME}/.bashrc.suited ]; then
+        cat >> ${HOME}/.bashrc.suited
+    else
+        cat >> ${HOME}/.bashrc
+    fi
+}
+
+function inform {
+    if [ -n "$@" ]; then
+        echo "$@" >> $INFO_TEMP_FILE
+    else
+        cat >> $INFO_TEMP_FILE
     fi
 }
 
@@ -172,6 +209,34 @@ function process_brewfile {
     esac
 }
 
+function process_gemfile {
+    local gemfile=$( resolve_filename "$1" )
+    local tempfile
+
+    case "$gemfile" in
+        http:*|https:*)
+            # fetch a remote file and process it locally
+            if url=$( fetch_url "$gemfile" ); then
+                action "process remote gemfile '$gemfile'"
+                bundle install "--gemfile=$CURL_TEMP_FILE"
+            else
+                error "cannot process '$url': curl failure"
+                return 1
+            fi
+            ;;
+
+        *)  # process a local file
+            if [ -f "$gemfile" ]; then
+                action "process local gemfile '$gemfile'"
+                bundle install "--gemfile=$gemfile"
+            else
+                error "cannot process '$gemfile': does not exist"
+                return 1
+            fi
+            ;;
+    esac
+}
+
 function checkout_github_repo {
     local repo="$1"
     local destination="$2"
@@ -192,6 +257,8 @@ function checkout_github_repo {
 
         [ -f Brewfile ] && \
             process_brewfile Brewfile
+        [ -f Gemfile ] && \
+            process_gemfile Gemfile
         [ -f script/bootstrap ] && \
             execute_shell_script script/bootstrap
     fi
@@ -238,6 +305,8 @@ function process_line {
 
     if [ "$filename" == 'brewfile' ]; then
         process_brewfile "$line"
+    elif [ "$filename" == 'gemfile' ]; then
+        process_gemfile "$line"
     elif [[ "$filename" == *.sh ]]; then
         execute_shell_script "$line"
     else

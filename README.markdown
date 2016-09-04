@@ -4,98 +4,77 @@ suited
 Set up your Mac OS X development environment as a lone developer, or as
 part of a team.
 
-## How it works
+## Quick example usage and suitfile
 
-Running `bash suited.sh` without any arguments will look for a file
-`main.conf` in the current working directory and try to satisfy its contents.
+From a fresh install of macOS/OS X, create an account that can administer
+the computer.
 
-If an argument is given (eg `bash suited.sh path/to/suited/files` or
-`bash suited.sh https://example.com`), then that is used as the base directory
-that all relative filenames are to be found in. Suited will still look for a
-file `main.conf` in that directory to start from.
+Open the Terminal application and setup some environment variables.
 
+    export GIT_NAME='Wendy Testaburger'
+    export GIT_EMAIL='wendy@example.com'
+    export GITHUB_USER='wendy'
 
-## suited's configuration file
+Create a new GitHub [personal access token][token] with at least the `repo`
+and `write:public_key` scopes active. Copy the token into your environment.
 
-An example of the things you can specify in your file:
+    export GITHUB_TOKEN='123abc...'
 
-  * lines starting with a hash are comments and are ignored
-  * lines that end `Brewfile` (case insensitive) are installed by
-    [Brew Bundle](https://github.com/Homebrew/homebrew-bundle) with
-    `brew bundle --file`
-  * lines that end `.sh` are sourced (executed in the same shell process)
-  * lines starting with `github:` are repositories you want to work on, so
-    they are:
-      * checked out to `~/Code/owner/repo`
-      * if a file `Brewfile` exists in the root, it is installed
-      * if a file `scripts/bootstrap` exists, it is sourced
-  * anything else is interpreted as another config file, and processed as
-    per this list
+Create a new SSH key and register it with GitHub (or copy an existing one
+you already have to your computer).
 
-Note:
+```bash
+# create key and add to the ssh-agent
+ssh-keygen -trsa -b4096 -C "$GIT_EMAIL" -f $HOME/.ssh/id_rsa
+ssh-add $HOME/.ssh/id_rsa
 
-  * instances of `$USER` are replaced with the current username
-  * instances of `$HOST` are replaced with the output of
-    `hostname -s` (but also see environment settings below)
-  * instances of `$GITHUB_USER` are replaced with the contents of
-    that environment variable
-  * no other variables are interpolated
+# upload new key to GitHub
+pubkey=$( cat $HOME/.ssh/id_rsa.pub )
+json=$( printf '{"title": "%s", "key": "%s"}' "$GIT_EMAIL" "$pubkey" )
+curl -d "$json" https://api.github.com/user/keys?access_token=$GITHUB_TOKEN
+```
 
-See `main.conf.example` for an illustration of what a config file might look
-like.
+Fetch `suited.sh` and run it, telling it which file(s) to use to setup
+your computer. They can be relative or absolute path, URLs or special 
+github notation, and any type of file `suited` understands (as documented in [the suitfile](documentation/suitfile.markdown)).
 
-
-## Environment variables
-
-Some environment variables can be set before running `suited.sh` to influence
-how things are setup:
-
-  * If using `setup/git.sh`:
-
-      * `GIT_NAME` should be the full name to use when committing
-      * `GIT_EMAIL` should be the email address to use when committing
-      * `GITHUB_USER` should be the GitHub account
-
-    Note, though, that these will be prompted for if the environment
-    variables are not set.
-
-  * `HOMEBREW_PREFIX` is where Homebrew should be installed
-    (defaults to `/usr/local`)
-  * `HOST` is the string to treat as the first part of the hostname of the
-    computer, if you are using that in any config lines (defaults to
-    the output of `hostname -s`)
-  * `REPO_DIR` is the base directory GitHub repositories are checked out into
-    (defaults to `~/Code`)
-
-
-## Using `suited`
-
-There are two approaches to using suited to setup a new Mac:
-
- 1. Fork this repo, `cp suited.conf.example main.conf` and edit it to
-    match your desired setup.
- 2. Create a new repo for keeping your setups in, and refer to anything
-    you want from this repo with the full URL
-    (like [my suit repo](https://github.com/norm/suit) does).
-
-Forking is probably easier if you need to change any of the setup scripts,
-starting afresh is probably easier if you don't. Either way, after you
-have edited the configurations you are going to use:
-
-    export GIT_NAME='Your Full Name'
-    export GIT_EMAIL='you@example.com'
-    export GITHUB_USER='you'
     curl -O https://raw.githubusercontent.com/norm/suited/master/suited.sh
-    bash suited.sh https://raw.githubusercontent.com/your/repo/master
+    bash suited.sh \
+        github:wendy/suit:main.conf \
+        https://example.com/Brewfile
 
-If you have a copy of your setup repo on the local disk (eg after having setup
-your Mac, and you are testing changes to the setup), you can run it against
-those files instead:
 
-    bash suited.sh ~/Code/your/repo
+[token]: https://github.com/settings/tokens
 
-Note: in order to check out any GitHub repositories, you will need to have
-an SSH key active on the Mac, and have registered it with GitHub.
+
+### Example suitfile
+
+    # setup xcode, homebrew and git
+    github:norm/suited:setup/install_xcode.sh
+    github:norm/suited:setup/homebrew.sh
+    github:norm/suited:setup/git.sh
+
+    # personal software
+    github:wendy/suit:Brewfile
+
+    # checkout code
+    repo wendy/suit
+    repo wendy/dotfiles
+
+    # lastly, ensure software is up to date
+    github:norm/suited:setup/software_update.sh
+
+
+## More documentation
+
+You should read these before getting starting with `suited`:
+
+  * [Using suited](documentation/usage.markdown)
+  * [The suitfile in depth](documentation/suitfile.markdown)
+
+I keep my setup [in a separate public repo](https://github.com/norm/suit/),
+to serve as a reference example of how to use `suited`.
+
 
 ## Why yet another macOS/OSX bootstrapper
 

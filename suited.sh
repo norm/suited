@@ -13,9 +13,10 @@ INFO_TEMP_FILE=$( mktemp '/tmp/suited.info.XXXXX' )
 DEBUG=0
 trap cleanup EXIT
 
-while getopts "d" option; do
+while getopts "dx" option; do
     case $option in
         d)  DEBUG=1;;
+        x)  set -x;;
     esac
 done
 shift $(( OPTIND - 1 ))

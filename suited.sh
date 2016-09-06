@@ -451,7 +451,7 @@ function process_suitfile {
                 )
                 local destination=$(
                     echo "$line" \
-                        | awk '{ print $3 }' \
+                        | tr -s ' ' | cut -d ' ' -f3- \
                         | sed -e "s:~:${HOME}:"
                 )
                 clone_repo $repo "$destination"

@@ -26,6 +26,12 @@ line; for example `KILL Dock` will run `killall Dock` (some processes need to
 be restarted to see the applied defaults).
 
 
+## Setting keyboard shortcuts
+
+Whilst keyboard shortcuts are modified using `defaults write`, this can also
+be done more easily by using [apply_shortcuts](apply_shortcuts.markdown).
+
+
 ## Example
 
 As an example, see [my defaults repository][defs], which I check out during

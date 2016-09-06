@@ -45,6 +45,8 @@ how things are setup:
   * If using `setup/apply_defaults.sh`, `MACOS_DEFAULTS_DIR` will
     override the default location of `~/etc/macos/defaults`.
 
+  * If using `setup/apply_shortcuts.sh`, `MACOS_SHORTCUTS_DIR` will
+    override the default location of `~/etc/macos/shortcuts`.
 
 ## Creating your setup
 

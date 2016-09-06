@@ -275,21 +275,34 @@ function clone_github_repo {
     if [ ! -d "$destination" ]; then
         mkdir -p "$destination"
         git clone git@github.com:${repo}.git "$destination"
-        
-        pushd "$destination" >/dev/null   # unnecessarily noisy
-
-        [ -f Brewfile ] && \
-            process_brewfile "${destination}/Brewfile"
-        [ -f Gemfile ] && \
-            process_gemfile "${destination}/Gemfile"
-        [ -f script/bootstrap ] && \
-            execute_shell_script "${destination}/script/bootstrap"
-
-        popd >/dev/null   # unnecessarily noisy
-
-    else
-        status 'already exists, skipping'
     fi
+
+    pushd "$destination" >/dev/null   # unnecessarily noisy
+
+    if [ -z "$SUITED_DONT_PULL_REPOS" ]; then
+        git fetch
+
+        # report the short state, but only if there are changes
+        git status -sb | grep -v '^## master...origin/master$' \
+            || true
+
+        # only pull if there are no new local commits
+        if git status -sb | grep '## master...origin/master .behind'; then
+            # pull may still fail ("changes ... would be overwritten")
+            # but this is not an error worth stopping suited for
+            git pull \
+                || error "Could not pull latest changes to $repo"
+        fi
+    fi
+
+    [ -f Brewfile ] && \
+        process_brewfile "${destination}/Brewfile"
+    [ -f Gemfile ] && \
+        process_gemfile "${destination}/Gemfile"
+    [ -f script/bootstrap ] && \
+        execute_shell_script "${destination}/script/bootstrap"
+
+    popd >/dev/null   # unnecessarily noisy
 }
 
 function clone_repo {

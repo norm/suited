@@ -66,6 +66,10 @@ It can contain:
       * `script/bootstrap` — if this exists, `suited` will source it
         (using GitHub's [scripts pattern](https://github.com/github/scripts-to-rule-them-all))
 
+    If running `suited` again, it will do a `git fetch` on a previously
+    cloned repository, and if new commits are on master it will `git pull`.
+    You can stop this by setting `SUITED_DONT_PULL_REPOS` to any value.
+
   * **other suitfiles**
 
     Any other line is interpreted to mean another suited configuration file, and

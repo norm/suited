@@ -8,6 +8,7 @@ set -e
 SUITED_SH="$0"
 REPO_TEST_CACHE=$( mktemp -d '/tmp/suited.repotest.XXXXX' )
 CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )
+STDIN_TEMP_FILE=$( mktemp 'suited.stdin.XXXXX' )
 INFO_TEMP_FILE=$( mktemp '/tmp/suited.info.XXXXX' )
 DEBUG=0
 trap cleanup EXIT
@@ -66,7 +67,7 @@ function cleanup {
         cat $INFO_TEMP_FILE
     fi
 
-    rm -rf $REPO_TEST_CACHE $CURL_TEMP_FILE $INFO_TEMP_FILE
+    rm -rf $REPO_TEST_CACHE $CURL_TEMP_FILE $INFO_TEMP_FILE $STDIN_TEMP_FILE
 }
 
 function accept_xcode_license {
@@ -361,6 +362,11 @@ function process_root_suitfile {
         github:*)
             BASE=$( echo "$1" | awk -F: '{ print $1 ":" $2 ":" }' )
             suitfile=$( echo "$1" | awk -F: '{ print $3 }' )
+            ;;
+
+        -)  cat > $STDIN_TEMP_FILE
+            BASE='./'
+            suitfile=$STDIN_TEMP_FILE
             ;;
 
         *)  BASE=$(dirname "$1")"/"

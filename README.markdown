@@ -41,6 +41,11 @@ github notation (as explained in [the suitfile documentation][sfd]).
     curl -O https://raw.githubusercontent.com/norm/suited/master/suited.sh
     bash suited.sh github:wendy/suit:main.conf
 
+Alternatively, an argument of a hyphen (`-`) means to use standard input
+as the suitfile:
+
+    echo "github:wendy/suit:Brewfile" | bash suited.sh -
+
 
 [token]: https://github.com/settings/tokens
 [sfd]: documentation/suitfile.markdown##relative-and-absolute-paths-and-urls

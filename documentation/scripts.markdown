@@ -74,3 +74,8 @@ Will install any outstanding macOS software updates.
 
 Recommended (in order to have security updates applied ASAP). Probably best to
 be included last, as some updates can be large downloads.
+
+
+## apply_defaults.sh
+
+Documented in [apply_defaults](apply_defaults.markdown).

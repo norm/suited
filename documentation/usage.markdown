@@ -42,6 +42,9 @@ how things are setup:
     override the default of cloning them into `~/Code` (this can also
     be overridden on a per-repository basis in the configuration file).
 
+  * If using `setup/apply_defaults.sh`, `MACOS_DEFAULTS_DIR` will
+    override the default location of `~/etc/macos/defaults`.
+
 
 ## Creating your setup
 

@@ -50,8 +50,9 @@ function error {
 }
 
 function debug {
-    [ $DEBUG -eq 1 ] && \
-        printf "${bold}${yellow}    ${1}${reset}\n" >&2
+    [ $DEBUG -eq 1 ] \
+        && printf "${bold}${yellow}    ${1}${reset}\n" >&2 \
+        || true
 }
 
 function cleanup {

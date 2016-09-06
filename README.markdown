@@ -36,15 +36,14 @@ curl -d "$json" https://api.github.com/user/keys?access_token=$GITHUB_TOKEN
 
 Fetch `suited.sh` and run it, telling it which file(s) to use to setup
 your computer. They can be relative or absolute path, URLs or special 
-github notation, and any type of file `suited` understands (as documented in [the suitfile](documentation/suitfile.markdown)).
+github notation (as explained in [the suitfile documentation][sfd]).
 
     curl -O https://raw.githubusercontent.com/norm/suited/master/suited.sh
-    bash suited.sh \
-        github:wendy/suit:main.conf \
-        https://example.com/Brewfile
+    bash suited.sh github:wendy/suit:main.conf
 
 
 [token]: https://github.com/settings/tokens
+[sfd]: documentation/suitfile.markdown##relative-and-absolute-paths-and-urls
 
 
 ### Example suitfile

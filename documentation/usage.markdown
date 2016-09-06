@@ -9,7 +9,9 @@ For example, I setup a new computer like so:
 
     # ...export all the things mentioned in the README...
     curl -O https://raw.githubusercontent.com/norm/suited/master/suited.sh
-    bash suited.sh github:norm/suit:main.conf
+    bash suited.sh \
+        github:norm/suit:main.conf \
+        github:norm/suit-private:main.conf
 
 
 ## Environment variables
@@ -41,7 +43,7 @@ how things are setup:
     be overridden on a per-repository basis in the configuration file).
 
 
-## Invoking `suited`
+## Creating your setup
 
 There are two approaches to using suited to setup a new Mac:
 

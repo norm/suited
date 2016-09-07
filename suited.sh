@@ -69,6 +69,15 @@ function cleanup {
         cat $INFO_TEMP_FILE
     fi
 
+    echo ''
+    if [ -z "$ERRORS" ]; then
+        action 'All done, suited is finished.'
+        action 'Your computer is now ready to go!'
+    else
+        error 'Something went wrong!'
+        error 'Re-running suited may fix things (if it was a temporary error).'
+    fi
+
     rm -rf $REPO_TEST_CACHE $CURL_TEMP_FILE $INFO_TEMP_FILE $STDIN_TEMP_FILE
 }
 
@@ -478,6 +487,10 @@ sudo -v || {
 }
 
 export IN_SUITED=1
+ERRORS=probably
+
 for file in "$@"; do
     process_root_suitfile "$file"
 done
+
+ERRORS=

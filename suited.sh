@@ -495,6 +495,9 @@ sudo -v || {
     exit 1
 }
 
+[ ! -f $HOME/.ssh/known_hosts ] && \
+    ssh-keyscan -t rsa github.com >$HOME/.ssh/known_hosts 2>/dev/null
+
 export IN_SUITED=1
 ERRORS=probably
 

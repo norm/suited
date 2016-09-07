@@ -245,8 +245,9 @@ function process_brewfile {
 function install_ruby_version {
     rbenv install -s
     rbenv rehash
-    gem list -I bundler && \
-        gem install bundler
+    gem list -I bundler \
+        && gem install bundler \
+        || true
 }
 
 function process_gemfile {

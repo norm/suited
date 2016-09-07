@@ -310,14 +310,20 @@ function clone_github_repo {
         fi
     fi
 
+    # install any homebrew dependencies
     [ -f Brewfile ] && \
         process_brewfile "${destination}/Brewfile"
-    [ -f .ruby-version ] && \
-        install_ruby_version
-    [ -f Gemfile ] && \
-        process_gemfile "${destination}/Gemfile"
-    [ -f script/bootstrap ] && \
+
+    if [ -f script/bootstrap ]; then
+        # run the bootstrap script, if there is one...
         execute_shell_script "${destination}/script/bootstrap"
+    else
+        # ...otherwise initialise things that look initialisable
+        [ -f .ruby-version ] && \
+            install_ruby_version
+        [ -f Gemfile ] && \
+            process_gemfile "${destination}/Gemfile"
+    fi
 
     popd >/dev/null   # unnecessarily noisy
 }

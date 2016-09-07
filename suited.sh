@@ -243,6 +243,13 @@ function process_brewfile {
     esac
 }
 
+function install_ruby_version {
+    rbenv install -s
+    gem list -I bundler && \
+        gem install bundler
+    rbenv rehash
+}
+
 function process_gemfile {
     local gemfile=$( resolve_filename "$1" )
     local tempfile
@@ -306,6 +313,8 @@ function clone_github_repo {
 
     [ -f Brewfile ] && \
         process_brewfile "${destination}/Brewfile"
+    [ -f .ruby-version ] && \
+        install_ruby_version
     [ -f Gemfile ] && \
         process_gemfile "${destination}/Gemfile"
     [ -f script/bootstrap ] && \

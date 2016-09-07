@@ -56,10 +56,14 @@ It can contain:
         repo  github:norm/wiki    ~/wiki
 
     After checking out a repository, `suited` will check for the following
-    files in it:
+    files in it, in this order:
 
       * `Brewfile` — if this exists, `suited` will use it to install any
         software dependencies
+      * `.ruby-version` — if this exists, `suited` will use `rbenv` to
+        install that version of ruby, and bundler (it is assumed that ruby
+        is setup at this point, you can use `setup/ruby_with_rbenv.sh` in
+        your setup for example)
       * `Gemfile` — it this exists, `suited` will use it to install any
         Gems (it is assumed that ruby is setup at this point, you can
         use `setup/ruby_with_rbenv.sh` in your setup for example)

@@ -23,4 +23,9 @@ EOF
 
     status 'Install bundler'
     gem install bundler
+else
+    # ensure rbenv init has occurred (open a shell, run suited such that
+    # rbenv is installed, then run it again and anything rubyish will fail
+    # as bash_profile startup is not run)
+    eval "$(rbenv init -)"
 fi

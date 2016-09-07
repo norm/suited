@@ -161,7 +161,6 @@ function is_public_repo {
 
     local filename=$( echo "$repo" | sed -e 's:/:.:' )
     local cache="$REPO_TEST_CACHE/$filename"
-    debug "cache='$cache'"
 
     [ -f "$cache.public" ] && \
         return 0

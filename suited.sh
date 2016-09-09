@@ -214,6 +214,30 @@ function fetch_url {
     eval curl --fail --progress-bar $curlargs "$url" > $CURL_TEMP_FILE
 }
 
+function update_git_clone {
+    local destination="$1"
+
+    pushd "$destination" >/dev/null   # unnecessarily noisy
+
+    if [ -z "$SUITED_DONT_PULL_REPOS" ]; then
+        git fetch
+
+        # report the short state, but only if there are changes
+        git status -sb | grep -v '^## master...origin/master$' \
+            || true
+
+        # only pull if there are no new local commits
+        if git status -sb | grep '## master...origin/master .behind'; then
+            # pull may still fail ("changes ... would be overwritten")
+            # but this is not an error worth stopping suited for
+            git pull \
+                || error "Could not pull latest changes to $repo"
+        fi
+    fi
+
+    popd >/dev/null   # unnecessarily noisy
+}
+
 function process_brewfile {
     local brewfile=$( resolve_filename "$1" )
     local tempfile
@@ -291,25 +315,11 @@ function clone_github_repo {
     if [ ! -d "$destination" ]; then
         mkdir -p "$destination"
         git clone git@github.com:${repo}.git "$destination"
+    else
+        update_git_clone "$destination"
     fi
 
     pushd "$destination" >/dev/null   # unnecessarily noisy
-
-    if [ -z "$SUITED_DONT_PULL_REPOS" ]; then
-        git fetch
-
-        # report the short state, but only if there are changes
-        git status -sb | grep -v '^## master...origin/master$' \
-            || true
-
-        # only pull if there are no new local commits
-        if git status -sb | grep '## master...origin/master .behind'; then
-            # pull may still fail ("changes ... would be overwritten")
-            # but this is not an error worth stopping suited for
-            git pull \
-                || error "Could not pull latest changes to $repo"
-        fi
-    fi
 
     # install any homebrew dependencies
     [ -f Brewfile ] && \

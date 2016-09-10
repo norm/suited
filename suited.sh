@@ -8,6 +8,7 @@ set -e
 SUITED_SH="$0"
 REPO_TEST_CACHE=$( mktemp -d '/tmp/suited.repotest.XXXXX' )
 CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )
+CRONTAB_TEMP_FILE=$( mktemp '/tmp/suited.cron.XXXXX' )
 STDIN_TEMP_FILE=$( mktemp 'suited.stdin.XXXXX' )
 INFO_TEMP_FILE=$( mktemp '/tmp/suited.info.XXXXX' )
 DEBUG=0
@@ -78,7 +79,7 @@ function cleanup {
         error 'Re-running suited may fix things (if it was a temporary error).'
     fi
 
-    rm -rf $REPO_TEST_CACHE $CURL_TEMP_FILE $INFO_TEMP_FILE $STDIN_TEMP_FILE
+    rm -rf $REPO_TEST_CACHE $CRONTAB_TEMP_FILE $CURL_TEMP_FILE $INFO_TEMP_FILE $STDIN_TEMP_FILE
 }
 
 function accept_xcode_license {
@@ -238,6 +239,32 @@ function update_git_clone {
     fi
 
     popd >/dev/null   # unnecessarily noisy
+}
+
+function add_to_crontab {
+    local crontab="$1"
+    local search_for
+
+    debug "add_to_crontab $crontab"
+
+    crontab -l > $CRONTAB_TEMP_FILE
+
+    for line in $( cat "$crontab" ); do
+        search_for=$(
+            echo "$line" \
+                | sed -e 's/\*/\\*/g' -e 's/  */ */g'
+        )
+
+        if ! grep -q "$search_for" $CRONTAB_TEMP_FILE; then
+            echo "$line" >> $CRONTAB_TEMP_FILE
+            inform <<EOF
+Added to your crontab:
+$line
+EOF
+        fi
+    done
+
+    crontab $CRONTAB_TEMP_FILE
 }
 
 function process_dockfile_line {
@@ -446,6 +473,10 @@ function setup_from_directory {
             process_gemfile "${directory}/Gemfile"
     fi
 
+    # lines to add to the crontab
+    [ -f crontab ] && \
+        add_to_crontab "${directory}/crontab"
+
     popd >/dev/null   # unnecessarily noisy
 }
 
@@ -490,6 +521,8 @@ function process_line {
 
     if [ "$filename" == 'brewfile' ]; then
         process_brewfile "$line"
+    elif [ "$filename" == 'crontab' ]; then
+        add_to_crontab "$line"
     elif [ "$filename" == 'dockfile' ]; then
         process_dockfile $( resolve_filename "$line" )
     elif [ "$filename" == 'gemfile' ]; then

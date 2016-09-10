@@ -84,6 +84,8 @@ It can contain:
               * `Gemfile` — it this exists, `suited` will use it to install
                 any Gems (it is assumed that ruby is setup at this point, you
                 can use `setup/ruby_with_rbenv.sh` in your setup for example)
+      * `crontab` — if this exists, `suited` will add each line of the file
+        to your Mac's list of cron jobs if it doesn't already exist.
 
     Note:
 

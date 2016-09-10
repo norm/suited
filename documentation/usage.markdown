@@ -22,11 +22,15 @@ how things are setup:
   * If you want to access private repositories, `GITHUB_TOKEN` needs to
     be set to a token with at least the `repo` scope active.
 
+  * If you want to use `setup/clone_starred_repos.sh`, `GITHUB_TOKEN` needs to
+    be set to a token to avoid `suited` failing because of rate limits, and
+    `GITHUB_USER` needs to be set to your GitHub account name.
+
   * If using `setup/git.sh`:
 
       * `GIT_NAME` should be the full name to use when committing
       * `GIT_EMAIL` should be the email address to use when committing
-      * `GITHUB_USER` should be the GitHub account
+      * `GITHUB_USER` should be your GitHub account name
 
     Note, though, that these will be prompted for if the environment
     variables are not set.

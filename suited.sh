@@ -105,6 +105,8 @@ function add_to_bashrc {
 }
 
 function inform {
+    echo '' >> $INFO_TEMP_FILE
+
     if [ -n "$@" ]; then
         echo "$@" >> $INFO_TEMP_FILE
     else

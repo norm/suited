@@ -68,6 +68,12 @@ Required if any repositories checked out during setup contain a `Gemfile`
 [bundler]: http://bundler.io
 
 
+## clone_starred_repos.sh
+
+This will checkout all repositories on GitHub that `GITHUB_USER` has
+starred.
+
+
 ## software_update.sh
 
 Will install any outstanding macOS software updates.

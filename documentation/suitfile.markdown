@@ -55,24 +55,39 @@ It can contain:
         repo  github:norm/suited
         repo  github:norm/wiki    ~/wiki
 
-    After checking out a repository, `suited` will check for the following
-    files in it, in this order:
-
-      * `Brewfile` — if this exists, `suited` will use it to install any
-        software dependencies
-      * `.ruby-version` — if this exists, `suited` will use `rbenv` to
-        install that version of ruby, and bundler (it is assumed that ruby
-        is setup at this point, you can use `setup/ruby_with_rbenv.sh` in
-        your setup for example)
-      * `Gemfile` — it this exists, `suited` will use it to install any
-        Gems (it is assumed that ruby is setup at this point, you can
-        use `setup/ruby_with_rbenv.sh` in your setup for example)
-      * `script/bootstrap` — if this exists, `suited` will source it
-        (using GitHub's [scripts pattern](https://github.com/github/scripts-to-rule-them-all))
-
     If running `suited` again, it will do a `git fetch` on a previously
     cloned repository, and if new commits are on master it will `git pull`.
     You can stop this by setting `SUITED_DONT_PULL_REPOS` to any value.
+
+    The repo is then setup as per directories below:
+
+  * **directories**
+
+    Any line that ends `/` is checked for the following files which are
+    automatically applied, and in this order:
+
+      * `Brewfile` — if this exists, `suited` will use it to install any
+        software dependencies
+      * `script/bootstrap` — if this exists, `suited` will source it,
+        otherwise it will check for:
+          * `bootstrap` — if this exists `suited` will source it,
+            otherwise it will check for:
+              * `.ruby-version` — if this exists, `suited` will use `rbenv` to
+                install that version of ruby, and bundler (it is assumed that
+                ruby is setup at this point, you can use
+                `setup/ruby_with_rbenv.sh` in your setup for example)
+              * `Gemfile` — it this exists, `suited` will use it to install
+                any Gems (it is assumed that ruby is setup at this point, you
+                can use `setup/ruby_with_rbenv.sh` in your setup for example)
+
+    Note:
+
+      * There are two different `bootstrap` scripts, provided
+        as alternatives. If you are following GitHub's 
+        [scripts pattern](https://github.com/github/scripts-to-rule-them-all))
+        then use `script/bootstrap`. If not, use `bootstrap`.
+      * Ruby and gems are not automatically initialised if either `bootstrap`
+        script exists, you must do this yourself.
 
   * **other suitfiles**
 

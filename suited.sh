@@ -319,24 +319,7 @@ function clone_github_repo {
         update_git_clone "$destination"
     fi
 
-    pushd "$destination" >/dev/null   # unnecessarily noisy
-
-    # install any homebrew dependencies
-    [ -f Brewfile ] && \
-        process_brewfile "${destination}/Brewfile"
-
-    if [ -f script/bootstrap ]; then
-        # run the bootstrap script, if there is one...
-        execute_shell_script "${destination}/script/bootstrap"
-    else
-        # ...otherwise initialise things that look initialisable
-        [ -f .ruby-version ] && \
-            install_ruby_version
-        [ -f Gemfile ] && \
-            process_gemfile "${destination}/Gemfile"
-    fi
-
-    popd >/dev/null   # unnecessarily noisy
+    setup_from_directory "$destination"
 }
 
 function clone_repo {
@@ -352,6 +335,31 @@ function clone_repo {
         *)  error "suited only understands github repos"
             ;;
     esac
+}
+
+function setup_from_directory {
+    directory="$1"
+
+    pushd "$directory" >/dev/null   # unnecessarily noisy
+
+    # install any homebrew dependencies
+    [ -f Brewfile ] && \
+        process_brewfile "${directory}/Brewfile"
+
+    if [ -f script/bootstrap ]; then
+        # run the bootstrap script, if there is one...
+        execute_shell_script "${directory}/script/bootstrap"
+    elif [ -f bootstrap ]; then
+        execute_shell_script "${directory}/bootstrap"
+    else
+        # ...otherwise initialise things that look initialisable
+        [ -f .ruby-version ] && \
+            install_ruby_version
+        [ -f Gemfile ] && \
+            process_gemfile "${directory}/Gemfile"
+    fi
+
+    popd >/dev/null   # unnecessarily noisy
 }
 
 function execute_shell_script {
@@ -399,6 +407,8 @@ function process_line {
         process_gemfile "$line"
     elif [[ "$filename" == *.sh ]]; then
         execute_shell_script "$line"
+    elif [[ "$line" == */ ]]; then
+        setup_from_directory $( resolve_filename "$line" )
     else
         process_suitfile "$line"
     fi

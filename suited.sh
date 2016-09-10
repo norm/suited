@@ -575,6 +575,15 @@ function process_suitfile {
                 # commented line, ignore
                 ;;
 
+            inform\ *)
+                # report message at the end
+                local message=$(
+                    echo "$line" \
+                        | cut -d ' ' -f2-
+                )
+                inform "$message"
+                ;;
+
             repo\ *)
                 # clone a repo and initialise it
                 local repo=$(

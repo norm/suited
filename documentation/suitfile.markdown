@@ -100,6 +100,14 @@ It can contain:
     its contents are processed before `suited` continues with the current
     configuration file.
 
+  * **`inform` statements**
+
+    A line that starts `inform` will add the remaining text to the information
+    that is presented to the user at the end of processing.
+
+        # reminder
+        inform Open 1Password and configure it to use Dropbox.
+
 
 ## Relative and absolute paths, and URLs
 

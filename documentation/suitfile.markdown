@@ -22,6 +22,11 @@ It can contain:
         # Add some software
         user/norm/Brewfile
 
+  * **Dockfile**
+
+    Any line that ends `Dockfile` (case insensitive) is used to modify the
+    contents of the Dock (see [dockfile explanation](dockfile.markdown)).
+
   * **Gemfiles**
 
     Any line that ends `Gemfile` (case insensitive) is used to install gems

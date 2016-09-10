@@ -240,6 +240,93 @@ function update_git_clone {
     popd >/dev/null   # unnecessarily noisy
 }
 
+function process_dockfile_line {
+    local command="$1"
+    local app="$2"
+    local rel="$3"
+    local rel_app="$4"
+    local replacing="$5"
+
+    case "$command" in
+        add)
+            status "Adding $2"
+            if [ -z "$replacing" ]; then
+                replacing="$app"
+            fi
+
+            case "$app" in
+                /*) ;;
+                *)  app="/Applications/$app.app"
+                    ;;
+            esac
+
+            if [ -n "$rel" ]; then
+                dockutil \
+                    --add "$app" \
+                    --$rel "$rel_app" \
+                    --replacing $replacing \
+                    --no-restart \
+                        || true
+            else
+                dockutil \
+                    --add "$app" \
+                    --replacing $replacing \
+                    --no-restart \
+                        || true
+            fi
+            ;;
+
+        remove)
+            status "Removing $app"
+            dockutil --remove "$app" --no-restart \
+                >/dev/null  # not being in the dock is not an error
+            ;;
+
+        ''|\#*)
+            # comment or blank line, ignore
+            ;;
+
+        *)  status "Unknown action $command: $@"
+            ;;
+    esac
+}
+
+function process_dockfile {
+    local dockfile=$( resolve_filename "$1" )
+
+    type -t dockutil >/dev/null \
+        || brew install dockutil
+
+    case "$dockfile" in
+        http:*|https:*|github:*)
+            # fetch a remote file and process it locally
+            if url=$( fetch_url "$dockfile" ); then
+                action "process remote dockfile '$dockfile'"
+                usefile="$CURL_TEMP_FILE"
+            else
+                error "cannot process '$url': curl failure"
+                return 1
+            fi
+            ;;
+
+        *)  # process a local file
+            if [ -f "$dockfile" ]; then
+                action "process local dockfile '$dockfile'"
+                usefile="$dockfile"
+            else
+                error "cannot process '$dockfile': does not exist"
+                return 1
+            fi
+            ;;
+    esac
+
+    for line in $( cat "$usefile" ); do
+        eval process_dockfile_line $line
+    done
+
+    killall Dock
+}
+
 function process_brewfile {
     local brewfile=$( resolve_filename "$1" )
 
@@ -403,6 +490,8 @@ function process_line {
 
     if [ "$filename" == 'brewfile' ]; then
         process_brewfile "$line"
+    elif [ "$filename" == 'dockfile' ]; then
+        process_dockfile $( resolve_filename "$line" )
     elif [ "$filename" == 'gemfile' ]; then
         process_gemfile "$line"
     elif [[ "$filename" == *.sh ]]; then

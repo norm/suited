@@ -242,7 +242,6 @@ function update_git_clone {
 
 function process_brewfile {
     local brewfile=$( resolve_filename "$1" )
-    local tempfile
 
     case "$brewfile" in
         http:*|https:*|github:*)
@@ -278,7 +277,6 @@ function install_ruby_version {
 
 function process_gemfile {
     local gemfile=$( resolve_filename "$1" )
-    local tempfile
 
     case "$gemfile" in
         http:*|https:*|github:*)
@@ -442,7 +440,6 @@ function process_suitfile {
     local suitfile=$( resolve_filename "$1" )
     local filename
     local line
-    local tempfile
     local usefile
 
     case "$1" in
@@ -508,8 +505,6 @@ function process_suitfile {
         esac
     done
 
-    [ -n "$tempfile" ] && \
-        rm -f "$tempfile"
     return 0
 }
 

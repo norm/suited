@@ -244,6 +244,7 @@ function update_git_clone {
 function add_to_crontab {
     local crontab="$1"
     local attempt="${2:-no}"
+    local email
     local search_for
     local usefile
 
@@ -275,7 +276,25 @@ function add_to_crontab {
             ;;
     esac
 
-    crontab -l > $CRONTAB_TEMP_FILE
+    if ! crontab -l > $CRONTAB_TEMP_FILE 2>/dev/null; then
+        email=$( git config user.email )
+        [ -z "$email" ] \
+            && email='crontab@mailinator.com'
+
+        cat << EOF | sed -e 's/^ *//' > $CRONTAB_TEMP_FILE
+            MAILTO=$email
+            PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
+
+            #mn   hr    dom   mon   dow   cmd
+EOF
+
+        status 'initialising crontab'
+        inform <<EOF
+Created a new crontab file for you. Output and errors from cron jobs will be
+delivered to "${email}".
+You can change this with "crontab -e" if necessary.
+EOF
+    fi
 
     for line in $( cat "$usefile" ); do
         search_for=$(
@@ -287,7 +306,7 @@ function add_to_crontab {
             echo "$line" >> $CRONTAB_TEMP_FILE
             inform <<EOF
 Added to your crontab:
-$line
+    $line
 EOF
         fi
     done

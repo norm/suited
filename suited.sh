@@ -652,6 +652,7 @@ function process_suitfile {
         # trim whitespace
         line=$( echo "$line" | sed -e 's/^ *//' -e 's/ *$//' )
 
+        debug "$line"
         case "$line" in
             \#*)
                 # commented line, ignore

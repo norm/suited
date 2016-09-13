@@ -67,7 +67,9 @@ function cleanup {
     if [ "$info_length" -gt 0 ]; then
         echo ''
         action "Post-install information:"
+        printf $yellow
         cat $INFO_TEMP_FILE
+        printf $reset
     fi
 
     echo ''
@@ -108,7 +110,7 @@ function add_to_bashrc {
 function inform {
     echo '' >> $INFO_TEMP_FILE
 
-    if [ -n "$@" ]; then
+    if [ -n "$*" ]; then
         echo "$@" >> $INFO_TEMP_FILE
     else
         cat >> $INFO_TEMP_FILE

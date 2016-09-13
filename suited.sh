@@ -243,13 +243,41 @@ function update_git_clone {
 
 function add_to_crontab {
     local crontab="$1"
+    local attempt="${2:-no}"
     local search_for
+    local usefile
 
-    debug "add_to_crontab $crontab"
+    case "$crontab" in
+        http:*|https:*|github:*)
+            # fetch a remote file and process it locally
+            if url=$( fetch_url "$crontab" ); then
+                action "process remote crontab '$crontab'"
+                usefile="$CURL_TEMP_FILE"
+            else
+                if [ $attempt == 'no' ]; then
+                    error "cannot process '$url': curl failure"
+                    return 1
+                else
+                    debug "$crontab does not exist"
+                    return 0
+                fi
+            fi
+            ;;
+
+        *)  # process a local file
+            if [ -f "$crontab" ]; then
+                action "process local crontab '$crontab'"
+                usefile="$crontab"
+            else
+                error "cannot process '$crontab': does not exist"
+                return 1
+            fi
+            ;;
+    esac
 
     crontab -l > $CRONTAB_TEMP_FILE
 
-    for line in $( cat "$crontab" ); do
+    for line in $( cat "$usefile" ); do
         search_for=$(
             echo "$line" \
                 | sed -e 's/\*/\\*/g' -e 's/  */ */g'
@@ -356,6 +384,7 @@ function process_dockfile {
 
 function process_brewfile {
     local brewfile=$( resolve_filename "$1" )
+    local attempt="${2:-no}"
 
     case "$brewfile" in
         http:*|https:*|github:*)
@@ -364,8 +393,12 @@ function process_brewfile {
                 action "process remote brewfile '$brewfile'"
                 brew bundle "--file=$CURL_TEMP_FILE"
             else
-                error "cannot process '$url': curl failure"
-                return 1
+                if [ $attempt == 'no' ]; then
+                    error "cannot process '$url': curl failure"
+                    return 1
+                else
+                    debug "no brewfile ${brewfile}"
+                fi
             fi
             ;;
 
@@ -454,34 +487,45 @@ function clone_repo {
 function setup_from_directory {
     directory="$1"
 
-    pushd "$directory" >/dev/null   # unnecessarily noisy
+    case "$directory" in
+        http:*|https:*|github:*)
+            process_brewfile "${directory}Brewfile" try
+            execute_shell_script "${directory}bootstrap" try
+            add_to_crontab "${directory}crontab" try
+            ;;
 
-    # install any homebrew dependencies
-    [ -f Brewfile ] && \
-        process_brewfile "${directory}/Brewfile"
+        *)  # local directory
+            pushd "$directory" >/dev/null   # unnecessarily noisy
 
-    if [ -f script/bootstrap ]; then
-        # run the bootstrap script, if there is one...
-        execute_shell_script "${directory}/script/bootstrap"
-    elif [ -f bootstrap ]; then
-        execute_shell_script "${directory}/bootstrap"
-    else
-        # ...otherwise initialise things that look initialisable
-        [ -f .ruby-version ] && \
-            install_ruby_version
-        [ -f Gemfile ] && \
-            process_gemfile "${directory}/Gemfile"
-    fi
+            # install any homebrew dependencies
+            [ -f Brewfile ] && \
+                process_brewfile "${directory}/Brewfile"
 
-    # lines to add to the crontab
-    [ -f crontab ] && \
-        add_to_crontab "${directory}/crontab"
+            if [ -f script/bootstrap ]; then
+                # run the bootstrap script, if there is one...
+                execute_shell_script "${directory}/script/bootstrap"
+            elif [ -f bootstrap ]; then
+                execute_shell_script "${directory}/bootstrap"
+            else
+                # ...otherwise initialise things that look initialisable
+                [ -f .ruby-version ] && \
+                    install_ruby_version
+                [ -f Gemfile ] && \
+                    process_gemfile "${directory}/Gemfile"
+            fi
 
-    popd >/dev/null   # unnecessarily noisy
+            # lines to add to the crontab
+            [ -f crontab ] && \
+                add_to_crontab "${directory}/crontab"
+
+            popd >/dev/null   # unnecessarily noisy
+            ;;
+    esac
 }
 
 function execute_shell_script {
     local script=$( resolve_filename "$1" )
+    local attempt="${2:-no}"
 
     case "$script" in
         http:*|https:*|github:*)
@@ -490,8 +534,13 @@ function execute_shell_script {
                 action "execute remote script '$script'"
                 source "$CURL_TEMP_FILE"
             else
-                error "cannot execute '$url': curl failure"
-                return 1
+                if [ $attempt == 'no' ]; then
+                    error "cannot execute '$url': curl failure"
+                    return 1
+                else
+                    debug "$script does not exist"
+                    return 1
+                fi
             fi
             ;;
 

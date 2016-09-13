@@ -95,6 +95,10 @@ It can contain:
         then use `script/bootstrap`. If not, use `bootstrap`.
       * Ruby and gems are not automatically initialised if either `bootstrap`
         script exists, you must do this yourself.
+      * For remote directories (eg. `github:norm/suit:setup/antirsi/`) only
+        `Brewfile`, `bootstrap` and `crontab` are checked for, as setting up
+        from a directory like this is expected to setup tools, not full-blown
+        code repositories.
 
   * **other suitfiles**
 

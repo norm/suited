@@ -59,6 +59,16 @@ function debug {
         || true
 }
 
+function silent_pushd {
+    # pushd reports the stack, this output is not wanted
+    pushd "$1" >/dev/null
+}
+
+function silent_popd {
+    # pushd reports the stack, this output is not wanted
+    popd >/dev/null
+}
+
 function cleanup {
     local info_length=$(
         wc -l $INFO_TEMP_FILE \
@@ -224,7 +234,7 @@ function fetch_url {
 function update_git_clone {
     local destination="$1"
 
-    pushd "$destination" >/dev/null   # unnecessarily noisy
+    silent_pushd "$destination"
 
     if [ -z "$SUITED_DONT_PULL_REPOS" ]; then
         git fetch
@@ -242,7 +252,7 @@ function update_git_clone {
         fi
     fi
 
-    popd >/dev/null   # unnecessarily noisy
+    silent_popd
 }
 
 function add_to_crontab {
@@ -518,7 +528,7 @@ function setup_from_directory {
             ;;
 
         *)  # local directory
-            pushd "$directory" >/dev/null   # unnecessarily noisy
+            silent_pushd "$directory"
 
             # install any homebrew dependencies
             [ -f Brewfile ] && \
@@ -541,7 +551,7 @@ function setup_from_directory {
             [ -f crontab ] && \
                 add_to_crontab "${directory}/crontab"
 
-            popd >/dev/null   # unnecessarily noisy
+            silent_popd
             ;;
     esac
 }

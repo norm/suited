@@ -760,6 +760,13 @@ ERRORS=probably
 [ "$#" == 0 ] \
     && abort "No suitfile(s) specified"
 
+# no GITHUB_TOKEN means no access to private content
+# (this is not an error if you're not trying to fetch any, of course)
+[ -z "$GITHUB_TOKEN" ] && {
+    status "GITHUB_TOKEN is not set, so private GitHub repos will be inaccessible"
+    sleep 2
+}
+
 # first, check we can sudo
 [ -z "$IN_SUITED" -a "$SUDO" == 1 ] && {
     echo "Checking you can sudo, enter password if prompted..."

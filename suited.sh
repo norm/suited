@@ -53,6 +53,11 @@ function error {
     printf "${bold}${magenta}*** ${1}${reset}\n" >&2
 }
 
+function abort {
+    error "$1"
+    exit 1
+}
+
 function debug {
     [ $DEBUG -eq 1 ] \
         && printf "${bold}${yellow}    ${1}${reset}\n" >&2 \
@@ -750,6 +755,10 @@ function process_suitfile {
 }
 
 ERRORS=probably
+
+# no suitfile is an error
+[ "$#" == 0 ] \
+    && abort "No suitfile(s) specified"
 
 # first, check we can sudo
 [ -z "$IN_SUITED" -a "$SUDO" == 1 ] && {

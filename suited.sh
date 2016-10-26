@@ -517,6 +517,18 @@ function clone_repo {
     esac
 }
 
+function download_file {
+    local source="$1"
+    local destination="$2"
+
+    if url=$( fetch_url "$source" ); then
+        cp "$CURL_TEMP_FILE" "$destination"
+    else
+        debug "$source does not exist"
+        return 1
+    fi
+}
+
 function setup_from_directory {
     directory="$1"
 
@@ -712,6 +724,21 @@ function process_suitfile {
                         | sed -e "s:~:${HOME}:"
                 )
                 clone_repo $repo "$destination"
+                ;;
+
+            download\ *)
+                debug "downloading file"
+                # copy a remote file to the local filesystem
+                local file=$(
+                    echo "$line" \
+                        | awk '{ print $2 }'
+                )
+                local destination=$(
+                    echo "$line" \
+                        | tr -s ' ' | cut -d ' ' -f3- \
+                        | sed -e "s:~:${HOME}:"
+                )
+                download_file $file "$destination"
                 ;;
 
             *)  process_line "$line"

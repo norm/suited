@@ -100,6 +100,19 @@ It can contain:
         from a directory like this is expected to setup tools, not full-blown
         code repositories.
 
+  * **files to download**
+
+     Any line that starts `download` is used to download a file.
+
+     The second argument is the URL of the file (which can include `github:`
+     shortcuts as documented below).
+
+     The third argument is the local destination filename for the file.
+
+        # important things
+        download http://bumph.cackhanded.net/norm.jpg ~/Desktop/norm.jpg
+        download github:norm/suit:ssh/known_hosts ~/.ssh/known_hosts
+
   * **other suitfiles**
 
     Any other line is interpreted to mean another suited configuration file, and

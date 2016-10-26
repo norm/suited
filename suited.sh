@@ -12,11 +12,13 @@ CRONTAB_TEMP_FILE=$( mktemp '/tmp/suited.cron.XXXXX' )
 STDIN_TEMP_FILE=$( mktemp 'suited.stdin.XXXXX' )
 INFO_TEMP_FILE=$( mktemp '/tmp/suited.info.XXXXX' )
 DEBUG=0
+SUDO=1
 trap cleanup EXIT
 
-while getopts "dx" option; do
+while getopts "dnx" option; do
     case $option in
         d)  DEBUG=1;;
+        n)  SUDO=0;;
         x)  set -x;;
     esac
 done
@@ -710,21 +712,22 @@ function process_suitfile {
     return 0
 }
 
+ERRORS=probably
 
 # first, check we can sudo
-[ -z "$IN_SUITED" ] && \
+[ -z "$IN_SUITED" -a "$SUDO" == 1 ] && {
     echo "Checking you can sudo, enter password if prompted..."
-
-sudo -v || {
-    echo "suited.sh needs sudo access"
-    exit 1
+    sudo -v || {
+        echo ''
+        error "suited.sh needs sudo access to configure Xcode"
+        exit 1
+    }
 }
+
+export IN_SUITED=1
 
 [ ! -f $HOME/.ssh/known_hosts ] && \
     ssh-keyscan -t rsa github.com >$HOME/.ssh/known_hosts 2>/dev/null
-
-export IN_SUITED=1
-ERRORS=probably
 
 for file in "$@"; do
     process_root_suitfile "$file"

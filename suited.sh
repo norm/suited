@@ -98,6 +98,10 @@ function cleanup {
         error 'Re-running suited may fix things (if it was a temporary error).'
     fi
 
+    # return back up the stack of directories
+    # (this means removing the STDIN_TEMP_FILE is more likely to work)
+    while popd >/dev/null 2>&1; do :; done
+
     rm -rf $REPO_TEST_CACHE $CRONTAB_TEMP_FILE $CURL_TEMP_FILE $INFO_TEMP_FILE $STDIN_TEMP_FILE
 }
 

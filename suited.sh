@@ -56,6 +56,48 @@ function debug {
         || true
 }
 
+function fetch_current_suited {
+    curl \
+        --fail --silent \
+        https://raw.githubusercontent.com/norm/suited/master/suited.sh \
+            > $CURL_TEMP_FILE
+
+    [ $? != 0 ] \
+        && abort "Couldn't fetch the current version of suited from GitHub"
+
+    now=$(
+        grep VERSION= $CURL_TEMP_FILE \
+            | head -1 \
+            | sed -e 's/VERSION=//' -e "s/'//g"
+    )
+
+    local this_major=$( echo $VERSION | awk -F. '{ print $1 }' )
+    local that_major=$( echo $now | awk -F. '{ print $1 }' )
+    if [ $that_major -gt $this_major ]; then
+        echo $now
+        return
+    fi
+
+    local this_minor=$( echo $VERSION | awk -F. '{ print $2 }' )
+    local that_minor=$( echo $now | awk -F. '{ print $2 }' )
+    if [ $that_minor -gt $this_minor ]; then
+        echo $now
+    fi
+}
+
+function report_version {
+    echo "This is suited version: $VERSION"
+
+    local now=$( fetch_current_suited )
+    if [ -n "$now" ]; then
+        printf "\n${magenta}${bold}"
+        echo "A more recent version $now is available."
+        printf "${reset}\n"
+    fi
+
+    exit 0
+}
+
 function silent_pushd {
     # pushd reports the stack, this output is not wanted
     pushd "$1" >/dev/null
@@ -750,10 +792,11 @@ function process_suitfile {
     return 0
 }
 
-while getopts "dnx" option; do
+while getopts "dnvx" option; do
     case $option in
         d)  DEBUG=1;;
         n)  SUDO=0;;
+        v)  report_version;;
         x)  set -x;;
     esac
 done

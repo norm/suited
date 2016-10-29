@@ -16,15 +16,6 @@ DEBUG=0
 SUDO=1
 trap cleanup EXIT
 
-while getopts "dnx" option; do
-    case $option in
-        d)  DEBUG=1;;
-        n)  SUDO=0;;
-        x)  set -x;;
-    esac
-done
-shift $(( OPTIND - 1 ))
-
 # where to clone repos to? (defaults to "~/Code/user/repo")
 REPO_DIR="${REPO_DIR:=${HOME}/Code}"
 
@@ -758,6 +749,15 @@ function process_suitfile {
 
     return 0
 }
+
+while getopts "dnx" option; do
+    case $option in
+        d)  DEBUG=1;;
+        n)  SUDO=0;;
+        x)  set -x;;
+    esac
+done
+shift $(( OPTIND - 1 ))
 
 ERRORS=probably
 

@@ -74,6 +74,7 @@ function usage {
         https://github.com/norm/suited/blob/master/documentation/suitfile.markdown
 EOF
 
+    ERRORS=silent
     exit 0
 }
 
@@ -118,6 +119,7 @@ function report_version {
         printf "${reset}\n"
     fi
 
+    ERRORS=silent
     exit 0
 }
 
@@ -154,11 +156,12 @@ function cleanup {
         printf $reset
     fi
 
-    echo ''
     if [ -z "$ERRORS" ]; then
+        echo ''
         action 'All done, suited is finished.'
         action 'Your computer is now ready to go!'
-    else
+    elif [ "$ERRORS" == 'probably' ]; then
+        echo ''
         error 'Something went wrong!'
         error 'Re-running suited may fix things (if it was a temporary error).'
     fi

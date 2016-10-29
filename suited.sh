@@ -91,11 +91,21 @@ function report_version {
     local now=$( fetch_current_suited )
     if [ -n "$now" ]; then
         printf "\n${magenta}${bold}"
-        echo "A more recent version $now is available."
+        echo "A more recent version $now is available. Run this to update:"
+        echo ''
+        echo "    echo github:norm/suited:setup/update_suited.sh | suited -"
         printf "${reset}\n"
     fi
 
     exit 0
+}
+
+function update_version {
+    local now=$( fetch_current_suited )
+    if [ -n "$now" ]; then
+        cp $CURL_TEMP_FILE $SUITED_SH
+        chmod 755 $SUITED_SH
+    fi
 }
 
 function silent_pushd {
@@ -792,10 +802,11 @@ function process_suitfile {
     return 0
 }
 
-while getopts "dnvx" option; do
+while getopts "dnuvx" option; do
     case $option in
         d)  DEBUG=1;;
         n)  SUDO=0;;
+        u)  update_version;;
         v)  report_version;;
         x)  set -x;;
     esac

@@ -87,6 +87,11 @@ be included last, as some updates can be large downloads.
 Documented in [apply_defaults](apply_defaults.markdown).
 
 
+## apply_shortcuts.sh
+
+Documented in [apply_shortcuts](apply_shortcuts.markdown).
+
+
 ## install_suited.sh
 
 Moves the version of suited in use to /usr/local/bin/suited. Useful to put

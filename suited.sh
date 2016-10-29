@@ -56,6 +56,27 @@ function debug {
         || true
 }
 
+function usage {
+    cat << EOF | sed -e 's/^        //'
+        Usage:
+
+        suited [-d] [-n] [-u] [-v] {suitfile | -} [suitfile...]
+
+            -d  turn on debugging
+            -n  turn off sudo attempt
+            -u  update suited
+            -v  show suited version
+
+        A suitfile of '-' means to use STDIN (eg. \`echo "..." | suited -\`).
+        Multiple suitfiles can be specified.
+
+        Suitfiles are documented on GitHub:
+        https://github.com/norm/suited/blob/master/documentation/suitfile.markdown
+EOF
+
+    exit 0
+}
+
 function fetch_current_suited {
     curl \
         --fail --silent \
@@ -802,12 +823,14 @@ function process_suitfile {
     return 0
 }
 
-while getopts "dnuvx" option; do
+while getopts "dhnuvx" option; do
     case $option in
         d)  DEBUG=1;;
         n)  SUDO=0;;
         u)  update_version;;
         v)  report_version;;
+        ?|h) 
+            usage;;
         x)  set -x;;
     esac
 done

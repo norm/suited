@@ -85,3 +85,10 @@ be included last, as some updates can be large downloads.
 ## apply_defaults.sh
 
 Documented in [apply_defaults](apply_defaults.markdown).
+
+
+## install_suited.sh
+
+Moves the version of suited in use to /usr/local/bin/suited. Useful to put
+at the end of your main setup suitfile so that suited is then more easily
+available for re-running later.

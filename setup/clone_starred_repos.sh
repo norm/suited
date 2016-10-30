@@ -4,17 +4,12 @@ local repo_list
 
 
 # must have the token set, otherwise you are likely to hit rate limiting
-[ -z "$GITHUB_TOKEN" ] && {
-    error "GITHUB_TOKEN needs to be set to clone starred repos."
-    inform "The script `setup/clone_starred_repos.sh` was not executed"
-    inform "because the GITHUB_TOKEN environment variable was not set."
-}
+[ -z "$GITHUB_TOKEN" ] \
+    && abort "GITHUB_TOKEN needs to be set to clone starred repos."
 
-[ -z "$GITHUB_USER" ] && {
-    error "GITHUB_USER needs to be set to clone starred repos."
-    inform "The script `setup/clone_starred_repos.sh` was not executed"
-    inform "because the GITHUB_USER environment variable was not set."
-}
+# must have the user set, otherwise what repos are you cloning?
+[ -z "$GITHUB_USER" ] \
+    && abort "GITHUB_USER needs to be set to clone starred repos."
 
 page_count=$(
     curl --head --silent -H "Authorization: token $GITHUB_TOKEN" \

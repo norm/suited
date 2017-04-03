@@ -5,7 +5,7 @@
 # stop immediately on errors
 set -e
 
-VERSION='0.7'
+VERSION='0.8'
 SUITED_SH="$0"
 REPO_TEST_CACHE=$( mktemp -d '/tmp/suited.repotest.XXXXX' )
 CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )
@@ -576,8 +576,6 @@ function clone_github_repo {
     else
         update_git_clone "$destination"
     fi
-
-    setup_from_directory "$destination"
 }
 
 function clone_repo {
@@ -792,6 +790,21 @@ function process_suitfile {
 
             repo\ *)
                 # clone a repo and initialise it
+                local repo=$(
+                    echo "$line" \
+                        | awk '{ print $2 }'
+                )
+                local destination=$(
+                    echo "$line" \
+                        | tr -s ' ' | cut -d ' ' -f3- \
+                        | sed -e "s:~:${HOME}:"
+                )
+                clone_repo $repo "$destination"
+                setup_from_directory "$destination"
+                ;;
+
+            clone\ *)
+                # clone a repo (without any initialising)
                 local repo=$(
                     echo "$line" \
                         | awk '{ print $2 }'

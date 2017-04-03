@@ -45,26 +45,31 @@ It can contain:
 
   * **repositories**
 
-    Any line that starts `repo` is used to check out a repository.
+    There are two ways to locally clone repositories:
 
-    The second argument should be of the form `github:norm/suited` (only github
-    repositories are currently supported).
+    1. Any line that starts `clone` is used to clone a repository.
 
-    An optional third argument is where the code should be cloned to. By
-    default it will be checked out into `~/Code`, in a subdirectory reflecting
-    the repository and user (eg. `norm/suited` will be cloned in
-    `~/Code/norm/suited`). You can use `~` in this argument to mean your home
-    directory.
+        The second argument should be of the form `github:norm/suited` (only
+        github repositories are currently supported).
 
-        # things I need
-        repo  github:norm/suited
-        repo  github:norm/wiki    ~/wiki
+        An optional third argument is where the code should be cloned to. By
+        default it will be checked out into `~/Code`, in a subdirectory
+        reflecting the repository and user (eg. `norm/suited` will be cloned
+        in `~/Code/norm/suited`). You can use `~` in this argument to mean
+        your home directory.
 
-    If running `suited` again, it will do a `git fetch` on a previously
-    cloned repository, and if new commits are on master it will `git pull`.
-    You can stop this by setting `SUITED_DONT_PULL_REPOS` to any value.
+            # things I need
+            repo  github:norm/suited
+            repo  github:norm/wiki    ~/wiki
 
-    The repo is then setup as per directories below:
+        If running `suited` again, it will do a `git fetch` on a previously
+        cloned repository, and if new commits are on master it will 
+        `git pull`. You can stop this by setting `SUITED_DONT_PULL_REPOS` 
+        to any value.
+
+    2. Any line that starts `repo` is used to clone a repository and then
+       set it up. The arguments are identical to `clone` above. Once the
+       repository is cloned, it is setup as described in **directories**.
 
   * **directories**
 

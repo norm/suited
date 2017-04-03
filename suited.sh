@@ -21,6 +21,7 @@ REPO_DIR="${REPO_DIR:=${HOME}/Code}"
 
 # where is homebrew installed?
 HOMEBREW_PREFIX="${HOMEBREW_PREFIX:=/usr/local}"
+HOMEBREW_REPOSITORY="${HOMEBREW_REPOSITORY:=/usr/local/Homebrew}"
 
 # hostname?
 HOST="${HOST:=$(hostname -s)}"

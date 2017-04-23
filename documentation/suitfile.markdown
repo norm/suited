@@ -113,6 +113,13 @@ It can contain:
         download http://bumph.cackhanded.net/norm.jpg ~/Desktop/norm.jpg
         download github:norm/suit:ssh/known_hosts ~/.ssh/known_hosts
 
+  * **login items**
+
+    Any line that starts `loginitem` is used to add an application to
+    the list of applications started when the user logs in.
+
+    The second argument is the name of the application.
+
   * **other suitfiles**
 
     Any other line is interpreted to mean another suited configuration file, and

@@ -5,7 +5,7 @@
 # stop immediately on errors
 set -e
 
-VERSION='0.6'
+VERSION='0.7'
 SUITED_SH="$0"
 REPO_TEST_CACHE=$( mktemp -d '/tmp/suited.repotest.XXXXX' )
 CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )
@@ -816,6 +816,24 @@ function process_suitfile {
                         | sed -e "s:~:${HOME}:"
                 )
                 download_file $file "$destination"
+                ;;
+
+            loginitem\ *)
+                debug "adding loginitem"
+                local application=$(
+                    echo "$line" \
+                        | cut -c10- \
+                        | sed -e 's/^ *//'
+                )
+                osascript -e "
+                    tell application \"System Events\"
+                        make login item at end with properties { \
+                            path: \"/Applications/${application}.app\", \
+                            name: \"$application\", \
+                            hidden: false \
+                        }
+                    end tell
+                "
                 ;;
 
             *)  process_line "$line"

@@ -5,7 +5,7 @@
 # stop immediately on errors
 set -e
 
-VERSION='0.8'
+VERSION='0.8.1'
 SUITED_SH="$0"
 REPO_TEST_CACHE=$( mktemp -d '/tmp/suited.repotest.XXXXX' )
 CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )
@@ -114,9 +114,8 @@ function report_version {
     local now=$( fetch_current_suited )
     if [ -n "$now" ]; then
         printf "\n${magenta}${bold}"
-        echo "A more recent version $now is available. Run this to update:"
-        echo ''
-        echo "    echo github:norm/suited:setup/update_suited.sh | suited -"
+        echo "A more recent version $now is available."
+        echo "Run \`suited -u\` to upgrade."
         printf "${reset}\n"
     fi
 
@@ -126,10 +125,17 @@ function report_version {
 
 function update_version {
     local now=$( fetch_current_suited )
+
     if [ -n "$now" ]; then
+        echo "Upgrading from $VERSION to $now..."
         cp $CURL_TEMP_FILE $SUITED_SH
         chmod 755 $SUITED_SH
+    else
+        echo "You have the latest published version of suited."
     fi
+
+    ERRORS=silent
+    exit
 }
 
 function silent_pushd {
@@ -862,7 +868,7 @@ while getopts "dhnuvx" option; do
     case $option in
         d)  DEBUG=1;;
         n)  SUDO=0;;
-        u)  update_version;;
+        u)  update_version; exit;;
         v)  report_version;;
         ?|h) 
             usage;;

@@ -5,7 +5,7 @@
 # stop immediately on errors
 set -e
 
-VERSION='0.8.1'
+VERSION='0.8.2'
 SUITED_SH="$0"
 REPO_TEST_CACHE=$( mktemp -d '/tmp/suited.repotest.XXXXX' )
 CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )
@@ -105,6 +105,14 @@ function fetch_current_suited {
     local that_minor=$( echo $now | awk -F. '{ print $2 }' )
     if [ $that_minor -gt $this_minor ]; then
         echo $now
+        return
+    fi
+
+    local this_patch=$( echo $VERSION | awk -F. '{ print $3 }' )
+    local that_patch=$( echo $now | awk -F. '{ print $3 }' )
+    if [ $that_patch -gt $this_patch ]; then
+        echo $now
+        return
     fi
 }
 

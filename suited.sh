@@ -910,7 +910,7 @@ ERRORS=probably
 
 export IN_SUITED=1
 
-[ ! -f $HOME/.ssh/known_hosts ] && \
+[ ! -f $HOME/.ssh/known_hosts ] && mkdir -p $HOME/.ssh && chmod 700 $HOME/.ssh && \
     ssh-keyscan -t rsa github.com >$HOME/.ssh/known_hosts 2>/dev/null
 
 for file in "$@"; do

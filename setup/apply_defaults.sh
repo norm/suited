@@ -4,7 +4,8 @@ if [ -d $dir ]; then
     pushd $dir >/dev/null  # unnecessarily noisy
 
     for file in *; do
-        if [ "$file" != 'README.markdown' ]; then
+        if [ "$file" != "README.markdown" -a \
+          "$file" != "README.md" -a "$file" != "LICENCE" ]; then
             status "apply $file"
 
             for line in $( cat "$file" ); do

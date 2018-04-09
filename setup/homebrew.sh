@@ -50,5 +50,4 @@ brew bundle --file=- <<EOF
     tap 'caskroom/cask'
     tap 'homebrew/core'
     tap 'homebrew/services'
-    tap 'homebrew/versions'
 EOF

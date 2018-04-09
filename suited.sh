@@ -910,6 +910,8 @@ ERRORS=probably
 
 export IN_SUITED=1
 
+[ ! -d $HOME/.ssh ] && \
+    install -m 0700 -d $HOME/.ssh
 [ ! -f $HOME/.ssh/known_hosts ] && \
     ssh-keyscan -t rsa github.com >$HOME/.ssh/known_hosts 2>/dev/null
 

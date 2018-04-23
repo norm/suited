@@ -21,6 +21,9 @@ breaking changes.
   predictable debugging and execution.
 * More boilerplate filenames (eg. LICENSE) are ignored when appying
   `setup/apply_defaults.sh` and `setup/apply_shortcuts.sh`.
+* When naming a directory in a suitfile, now assume applying the `suitfile`
+  within. This allows greater flexibility, as everything `suited` can do
+  is now available, rather than a random subset.
 
 ### Changed
 
@@ -31,6 +34,12 @@ breaking changes.
 
 * `suited` will create the `~/.ssh` directory if it doesn't already exist
   (which stops it breaking when trying to add to the `known_hosts` file).
+
+### Deprecated
+
+* The behaviour of naming a directory in a suitfile and having it process
+  the `Brewfile`, ruby versions and gems, and more is now deprecated in
+  favour of using an explicit `suitfile` in the directory.
 
 ### Removed
 

@@ -357,8 +357,8 @@ function add_to_crontab {
     case "$crontab" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "process remote crontab '$crontab'"
             if url=$( fetch_url "$crontab" ); then
-                action "process remote crontab '$crontab'"
                 usefile="$CURL_TEMP_FILE"
             else
                 if [ $attempt == 'no' ]; then
@@ -372,8 +372,8 @@ function add_to_crontab {
             ;;
 
         *)  # process a local file
+            action "process local crontab '$crontab'"
             if [ -f "$crontab" ]; then
-                action "process local crontab '$crontab'"
                 usefile="$crontab"
             else
                 error "cannot process '$crontab': does not exist"
@@ -480,8 +480,8 @@ function process_dockfile {
     case "$dockfile" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "process remote dockfile '$dockfile'"
             if url=$( fetch_url "$dockfile" ); then
-                action "process remote dockfile '$dockfile'"
                 usefile="$CURL_TEMP_FILE"
             else
                 error "cannot process '$url': curl failure"
@@ -490,8 +490,8 @@ function process_dockfile {
             ;;
 
         *)  # process a local file
+            action "process local dockfile '$dockfile'"
             if [ -f "$dockfile" ]; then
-                action "process local dockfile '$dockfile'"
                 usefile="$dockfile"
             else
                 error "cannot process '$dockfile': does not exist"
@@ -514,8 +514,8 @@ function process_brewfile {
     case "$brewfile" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "process remote brewfile '$brewfile'"
             if url=$( fetch_url "$brewfile" ); then
-                action "process remote brewfile '$brewfile'"
                 brew bundle "--file=$CURL_TEMP_FILE"
             else
                 if [ $attempt == 'no' ]; then
@@ -528,8 +528,8 @@ function process_brewfile {
             ;;
 
         *)  # process a local file
+            action "process local brewfile '$brewfile'"
             if [ -f "$brewfile" ]; then
-                action "process local brewfile '$brewfile'"
                 brew bundle "--file=$brewfile"
             else
                 error "cannot process '$brewfile': does not exist"
@@ -553,8 +553,8 @@ function process_gemfile {
     case "$gemfile" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "process remote gemfile '$gemfile'"
             if url=$( fetch_url "$gemfile" ); then
-                action "process remote gemfile '$gemfile'"
                 bundle install "--gemfile=$CURL_TEMP_FILE"
             else
                 error "cannot process '$url': curl failure"
@@ -563,8 +563,8 @@ function process_gemfile {
             ;;
 
         *)  # process a local file
+            action "process local gemfile '$gemfile'"
             if [ -f "$gemfile" ]; then
-                action "process local gemfile '$gemfile'"
                 bundle install "--gemfile=$gemfile"
             else
                 error "cannot process '$gemfile': does not exist"
@@ -665,8 +665,8 @@ function execute_shell_script {
     case "$script" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "execute remote script '$script'"
             if url=$( fetch_url "$script" ); then
-                action "execute remote script '$script'"
                 source "$CURL_TEMP_FILE"
             else
                 if [ $attempt == 'no' ]; then
@@ -680,8 +680,8 @@ function execute_shell_script {
             ;;
 
         *)  # process a local file
+            action "execute local script '$script'"
             if [ -f "$script" ]; then
-                action "execute local script '$script'"
                 source "$script"
             else
                 error "cannot execute '$script': does not exist"
@@ -762,8 +762,8 @@ function process_suitfile {
     case "$suitfile" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "process remote suitfile '$suitfile'"
             if url=$( fetch_url "$suitfile" ); then
-                action "process remote suitfile '$suitfile'"
                 usefile=$CURL_TEMP_FILE
             else
                 error "cannot process '$url': curl failure"
@@ -772,8 +772,8 @@ function process_suitfile {
             ;;
 
         *)  # process a local file
+            action "process local suitfile '$suitfile'"
             if [ -f "$suitfile" ]; then
-                action "process local suitfile '$suitfile'"
                 usefile="$suitfile"
             else
                 error "cannot process '$suitfile': does not exist"

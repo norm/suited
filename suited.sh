@@ -14,6 +14,7 @@ STDIN_TEMP_FILE=$( mktemp 'suited.stdin.XXXXX' )
 INFO_TEMP_FILE=$( mktemp '/tmp/suited.info.XXXXX' )
 DEBUG=0
 SUDO=1
+BASE=
 trap cleanup EXIT
 
 # where to clone repos to? (defaults to "~/Code/user/repo")
@@ -357,8 +358,8 @@ function add_to_crontab {
     case "$crontab" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "process remote crontab '$crontab'"
             if url=$( fetch_url "$crontab" ); then
-                action "process remote crontab '$crontab'"
                 usefile="$CURL_TEMP_FILE"
             else
                 if [ $attempt == 'no' ]; then
@@ -372,8 +373,8 @@ function add_to_crontab {
             ;;
 
         *)  # process a local file
+            action "process local crontab '$crontab'"
             if [ -f "$crontab" ]; then
-                action "process local crontab '$crontab'"
                 usefile="$crontab"
             else
                 error "cannot process '$crontab': does not exist"
@@ -480,8 +481,8 @@ function process_dockfile {
     case "$dockfile" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "process remote dockfile '$dockfile'"
             if url=$( fetch_url "$dockfile" ); then
-                action "process remote dockfile '$dockfile'"
                 usefile="$CURL_TEMP_FILE"
             else
                 error "cannot process '$url': curl failure"
@@ -490,8 +491,8 @@ function process_dockfile {
             ;;
 
         *)  # process a local file
+            action "process local dockfile '$dockfile'"
             if [ -f "$dockfile" ]; then
-                action "process local dockfile '$dockfile'"
                 usefile="$dockfile"
             else
                 error "cannot process '$dockfile': does not exist"
@@ -514,8 +515,8 @@ function process_brewfile {
     case "$brewfile" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "process remote brewfile '$brewfile'"
             if url=$( fetch_url "$brewfile" ); then
-                action "process remote brewfile '$brewfile'"
                 brew bundle "--file=$CURL_TEMP_FILE"
             else
                 if [ $attempt == 'no' ]; then
@@ -528,8 +529,8 @@ function process_brewfile {
             ;;
 
         *)  # process a local file
+            action "process local brewfile '$brewfile'"
             if [ -f "$brewfile" ]; then
-                action "process local brewfile '$brewfile'"
                 brew bundle "--file=$brewfile"
             else
                 error "cannot process '$brewfile': does not exist"
@@ -553,8 +554,8 @@ function process_gemfile {
     case "$gemfile" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "process remote gemfile '$gemfile'"
             if url=$( fetch_url "$gemfile" ); then
-                action "process remote gemfile '$gemfile'"
                 bundle install "--gemfile=$CURL_TEMP_FILE"
             else
                 error "cannot process '$url': curl failure"
@@ -563,8 +564,8 @@ function process_gemfile {
             ;;
 
         *)  # process a local file
+            action "process local gemfile '$gemfile'"
             if [ -f "$gemfile" ]; then
-                action "process local gemfile '$gemfile'"
                 bundle install "--gemfile=$gemfile"
             else
                 error "cannot process '$gemfile': does not exist"
@@ -665,8 +666,8 @@ function execute_shell_script {
     case "$script" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "execute remote script '$script'"
             if url=$( fetch_url "$script" ); then
-                action "execute remote script '$script'"
                 source "$CURL_TEMP_FILE"
             else
                 if [ $attempt == 'no' ]; then
@@ -680,8 +681,8 @@ function execute_shell_script {
             ;;
 
         *)  # process a local file
+            action "execute local script '$script'"
             if [ -f "$script" ]; then
-                action "execute local script '$script'"
                 source "$script"
             else
                 error "cannot execute '$script': does not exist"
@@ -720,13 +721,24 @@ function process_line {
     fi
 }
 
-function process_root_suitfile {
-    local suitfile
+function process_suitfile {
+    local suitfile=$( resolve_filename "$1" )
+    local oldbase="$BASE"
+    local filename
+    local line
+    local usefile
 
-    case "$1" in
+    # a new suitfile means a new BASE for locating relative filenames
+    case "$suitfile" in
+        http:*|https:*)
+            BASE="$(dirname "$suitfile")/"
+            # nothing?
+            ;;
+
         github:*)
-            BASE=$( echo "$1" | awk -F: '{ print $1 ":" $2 ":" }' )
-            suitfile=$( echo "$1" | awk -F: '{ print $3 }' )
+            repo="$( echo "$1" | awk -F: '{ print $1 ":" $2 ":" }' )"
+            path="$(dirname "$(echo "$1" | awk -F: '{ print $3 }')")/"
+            BASE="${repo}${path}"
             ;;
 
         -)  cat > $STDIN_TEMP_FILE
@@ -735,35 +747,17 @@ function process_root_suitfile {
             ;;
 
         *)  BASE=$(dirname "$1")"/"
+            [ "$path" = './' ] && \
+                path=''
             suitfile=$(basename "$1")
-            ;;
-    esac
-
-    process_suitfile "$suitfile"
-}
-
-function process_suitfile {
-    local suitfile=$( resolve_filename "$1" )
-    local filename
-    local line
-    local usefile
-
-    case "$1" in
-        http:*|https:*|/*|github:*)
-            # process absolute path suitfiles as a new root suitfile
-            # (absolute paths reset BASE)
-            $BASH $SUITED_SH "$1"
-            return
-            ;;
-        *)  # do nothing
             ;;
     esac
 
     case "$suitfile" in
         http:*|https:*|github:*)
             # fetch a remote file and process it locally
+            action "process remote suitfile '$suitfile'"
             if url=$( fetch_url "$suitfile" ); then
-                action "process remote suitfile '$suitfile'"
                 usefile=$CURL_TEMP_FILE
             else
                 error "cannot process '$url': curl failure"
@@ -772,11 +766,11 @@ function process_suitfile {
             ;;
 
         *)  # process a local file
-            if [ -f "$suitfile" ]; then
-                action "process local suitfile '$suitfile'"
-                usefile="$suitfile"
+            action "process local suitfile '${BASE}${suitfile}'"
+            if [ -f "${BASE}${suitfile}" ]; then
+                usefile="${BASE}${suitfile}"
             else
-                error "cannot process '$suitfile': does not exist"
+                error "cannot process '${BASE}${suitfile}': does not exist"
                 return 1
             fi
             ;;
@@ -869,6 +863,9 @@ function process_suitfile {
         esac
     done
 
+    # restore the old BASE setting (pop the stack)
+    BASE="$oldbase"
+
     return 0
 }
 
@@ -916,7 +913,7 @@ export IN_SUITED=1
     ssh-keyscan -t rsa github.com >$HOME/.ssh/known_hosts 2>/dev/null
 
 for file in "$@"; do
-    process_root_suitfile "$file"
+    process_suitfile "$file"
 done
 
 ERRORS=

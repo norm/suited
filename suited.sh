@@ -14,6 +14,7 @@ STDIN_TEMP_FILE=$( mktemp 'suited.stdin.XXXXX' )
 INFO_TEMP_FILE=$( mktemp '/tmp/suited.info.XXXXX' )
 DEBUG=0
 SUDO=1
+BASE=
 trap cleanup EXIT
 
 # where to clone repos to? (defaults to "~/Code/user/repo")
@@ -720,13 +721,24 @@ function process_line {
     fi
 }
 
-function process_root_suitfile {
-    local suitfile
+function process_suitfile {
+    local suitfile=$( resolve_filename "$1" )
+    local oldbase="$BASE"
+    local filename
+    local line
+    local usefile
 
-    case "$1" in
+    # a new suitfile means a new BASE for locating relative filenames
+    case "$suitfile" in
+        http:*|https:*)
+            BASE="$(dirname "$suitfile")/"
+            # nothing?
+            ;;
+
         github:*)
-            BASE=$( echo "$1" | awk -F: '{ print $1 ":" $2 ":" }' )
-            suitfile=$( echo "$1" | awk -F: '{ print $3 }' )
+            repo="$( echo "$1" | awk -F: '{ print $1 ":" $2 ":" }' )"
+            path="$(dirname "$(echo "$1" | awk -F: '{ print $3 }')")/"
+            BASE="${repo}${path}"
             ;;
 
         -)  cat > $STDIN_TEMP_FILE
@@ -735,27 +747,9 @@ function process_root_suitfile {
             ;;
 
         *)  BASE=$(dirname "$1")"/"
+            [ "$path" = './' ] && \
+                path=''
             suitfile=$(basename "$1")
-            ;;
-    esac
-
-    process_suitfile "$suitfile"
-}
-
-function process_suitfile {
-    local suitfile=$( resolve_filename "$1" )
-    local filename
-    local line
-    local usefile
-
-    case "$1" in
-        http:*|https:*|/*|github:*)
-            # process absolute path suitfiles as a new root suitfile
-            # (absolute paths reset BASE)
-            $BASH $SUITED_SH "$1"
-            return
-            ;;
-        *)  # do nothing
             ;;
     esac
 
@@ -772,11 +766,11 @@ function process_suitfile {
             ;;
 
         *)  # process a local file
-            action "process local suitfile '$suitfile'"
-            if [ -f "$suitfile" ]; then
-                usefile="$suitfile"
+            action "process local suitfile '${BASE}${suitfile}'"
+            if [ -f "${BASE}${suitfile}" ]; then
+                usefile="${BASE}${suitfile}"
             else
-                error "cannot process '$suitfile': does not exist"
+                error "cannot process '${BASE}${suitfile}': does not exist"
                 return 1
             fi
             ;;
@@ -869,6 +863,9 @@ function process_suitfile {
         esac
     done
 
+    # restore the old BASE setting (pop the stack)
+    BASE="$oldbase"
+
     return 0
 }
 
@@ -916,7 +913,7 @@ export IN_SUITED=1
     ssh-keyscan -t rsa github.com >$HOME/.ssh/known_hosts 2>/dev/null
 
 for file in "$@"; do
-    process_root_suitfile "$file"
+    process_suitfile "$file"
 done
 
 ERRORS=

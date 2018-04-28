@@ -896,16 +896,14 @@ ERRORS=probably
 }
 
 # first, check we can sudo
-[ -z "$IN_SUITED" -a "$SUDO" == 1 ] && {
-    echo "Checking you can sudo, enter password if prompted..."
+[ "$SUDO" == 1 ] && {
+    action "Checking you can sudo, enter password if prompted..."
     sudo -v || {
         echo ''
         error "suited.sh needs sudo access to configure Xcode"
         exit 1
     }
 }
-
-export IN_SUITED=1
 
 [ ! -d $HOME/.ssh ] && \
     install -m 0700 -d $HOME/.ssh

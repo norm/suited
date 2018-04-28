@@ -97,52 +97,54 @@ EOF
     exit 0
 }
 
-function fetch_current_suited {
-    curl \
-        --fail --silent \
-        https://raw.githubusercontent.com/norm/suited/master/suited.sh \
-            > $CURL_TEMP_FILE
+function fetch_latest_suited_release {
+    curl --silent https://api.github.com/repos/norm/suited/releases \
+        | egrep 'tag_name|target_commitish' \
+        | cut -d: -f2 \
+        | tr -d ' v",' \
+        | paste -d\  - - \
+        | sort -t '.' -k1,1n -k2,2n -k3,3n \
+        | tail -1
 
     [ $? != 0 ] \
-        && abort "Couldn't fetch the current version of suited from GitHub"
+        && abort "Couldn't fetch the list of releases of suited from GitHub"
+}
 
-    now=$(
-        grep VERSION= $CURL_TEMP_FILE \
-            | head -1 \
-            | sed -e 's/VERSION=//' -e "s/'//g"
-    )
+function check_current_suited {
+    local latest="$(fetch_latest_suited_release | cut -d' ' -f1)"
 
     local this_major=$( echo $VERSION | awk -F. '{ print $1 }' )
-    local that_major=$( echo $now | awk -F. '{ print $1 }' )
-    if [ $that_major -gt $this_major ]; then
-        echo $now
-        return
-    fi
-
+    local that_major=$( echo $latest | awk -F. '{ print $1 }' )
     local this_minor=$( echo $VERSION | awk -F. '{ print $2 }' )
-    local that_minor=$( echo $now | awk -F. '{ print $2 }' )
-    if [ $that_minor -gt $this_minor ]; then
-        echo $now
-        return
-    fi
-
+    local that_minor=$( echo $latest | awk -F. '{ print $2 }' )
     local this_patch=$( echo $VERSION | awk -F. '{ print $3 }' )
-    local that_patch=$( echo $now | awk -F. '{ print $3 }' )
-    if [ $that_patch -gt $this_patch ]; then
-        echo $now
+    local that_patch=$( echo $latest | awk -F. '{ print $3 }' )
+
+    if [ $that_major -gt $this_major ]; then
+        echo $latest
         return
+    elif [ $that_major = $this_major ]; then
+        if [ $that_minor -gt $this_minor ]; then
+            echo $latest
+            return
+        elif [ $that_minor = $this_minor ]; then
+            if [ "${that_patch:-0}" -gt "${this_patch:-0}" ]; then
+                echo $latest
+                return
+            fi
+        fi
     fi
 }
 
 function report_version {
-    echo "This is suited version: $VERSION"
+    local now=$( check_current_suited )
 
-    local now=$( fetch_current_suited )
+    status "This is suited version: ${VERSION}."
     if [ -n "$now" ]; then
-        printf "\n${magenta}${bold}"
-        echo "A more recent version $now is available."
-        echo "Run \`suited -u\` to upgrade."
-        printf "${reset}\n"
+        status "$(
+            echo "A more recent version ${now} is available." \
+                 "Run \`suited -u\` to upgrade."
+        )"
     fi
 
     ERRORS=silent
@@ -150,18 +152,19 @@ function report_version {
 }
 
 function update_version {
-    local now=$( fetch_current_suited )
+    local now=$( check_current_suited )
+    local url
 
     if [ -n "$now" ]; then
-        echo "Upgrading from $VERSION to $now..."
-        cp $CURL_TEMP_FILE $SUITED_SH
-        chmod 755 $SUITED_SH
+        status "Upgrading from ${VERSION} to ${now}..."
+        url=$(fetch_url github:norm/suited@v${now}:suited.sh)
+        install -m 0755 "$CURL_TEMP_FILE" "$SUITED_SH"
     else
-        echo "You have the latest published version of suited."
+        status "This is the latest published version of suited."
     fi
 
     ERRORS=silent
-    exit
+    exit 0
 }
 
 function silent_pushd {

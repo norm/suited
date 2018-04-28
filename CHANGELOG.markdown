@@ -23,6 +23,11 @@ breaking changes.
 * More boilerplate filenames (eg. LICENSE) are ignored when appying
   `setup/apply_defaults.sh` and `setup/apply_shortcuts.sh`.
 
+### Changed
+
+* The output of suited has been tweaked (different colours and spacings),
+  and the commands to output formatted text added to the suitfile definition.
+
 ### Fixed
 
 * `suited` will create the `~/.ssh` directory if it doesn't already exist

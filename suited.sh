@@ -180,11 +180,7 @@ function cleanup {
         echo ''
     fi
 
-    if [ -z "$ERRORS" ]; then
-        echo ''
-        action 'All done, suited is finished.'
-        action 'Your computer is now ready to go!'
-    elif [ "$ERRORS" == 'probably' ]; then
+    if [ "$ERRORS" == 'probably' ]; then
         echo ''
         error 'Something went wrong!'
         error 'Re-running suited may fix things (if it was a temporary error).'

@@ -38,7 +38,7 @@ Fetch `suited.sh` and run it, telling it which file(s) to use to setup
 your computer. They can be relative or absolute path, URLs or special 
 github notation (as explained in [the suitfile documentation][sfd]).
 
-    curl -O https://raw.githubusercontent.com/norm/suited/master/suited.sh
+    curl -O https://raw.githubusercontent.com/norm/suited/latest/suited.sh
     bash suited.sh github:wendy/suit:main.conf
 
 Alternatively, an argument of a hyphen (`-`) means to use standard input

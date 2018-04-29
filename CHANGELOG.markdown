@@ -4,6 +4,14 @@ Changes to suited
 All notable changes to `suited` will be documented in this file.
 
 
+Unreleased
+----------
+
+### Added
+
+* New suitfile command `symlink` to create symbolic links.
+
+
 0.9 — 2018-04-29
 ----------------
 

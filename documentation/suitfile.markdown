@@ -131,6 +131,20 @@ It can contain:
         download http://bumph.cackhanded.net/norm.jpg ~/Desktop/norm.jpg
         download github:norm/suit:ssh/known_hosts ~/.ssh/known_hosts
 
+  * **symbolic links**
+
+    Any line that starts `symlink` will create a symbolic link. The first
+    argument is the source (what the symbolic link points at), the second
+    is the target (the symbolic link itself).
+
+      # make .ssh point at etc/ssh
+      symlink ~/etc/ssh ~/.ssh
+
+    If the target already exists and is a symbolic link, it will be
+    removed and re-created (ie. it is safe to call suitfiles using symlink
+    repeatedly). If it exists and is not a symbolic link, suited will
+    abort with an error.
+
   * **login items**
 
     Any line that starts `loginitem` is used to add an application to

@@ -921,6 +921,32 @@ function process_suitfile {
                 download_file $file "$destination"
                 ;;
 
+            symlink\ *)
+                debug "making symlink"
+                local source=$(
+                    echo "$line" \
+                        | awk '{ print $2 }' \
+                        | sed -e "s:~:${HOME}:"
+                )
+                local target=$(
+                    echo "$line" \
+                        | awk '{ print $3 }' \
+                        | sed -e "s:~:${HOME}:"
+                )
+
+                if [ ! -e "$target" ]; then
+                    # doesn't exist, symlink
+                    ln -s "$source" "$target"
+                elif [ -h "$target" ]; then
+                    # exists and is symlink, remake just incase
+                    rm "$target"
+                    ln -s "$source" "$target"
+                else
+                    # exists, oh well
+                    error "cannot make symlink '$target' -- already exists"
+                fi
+                ;;
+
             loginitem\ *)
                 debug "adding loginitem"
                 local application=$(

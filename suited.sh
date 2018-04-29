@@ -170,7 +170,7 @@ function silent_pushd {
 }
 
 function silent_popd {
-    # pushd reports the stack, this output is not wanted
+    # popd reports the stack, this output is not wanted
     popd >/dev/null
 }
 

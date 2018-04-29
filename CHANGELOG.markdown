@@ -4,8 +4,8 @@ Changes to suited
 All notable changes to `suited` will be documented in this file.
 
 
-Unreleased
-----------
+0.9 — 2018-04-29
+----------------
 
 ### *Important change*
 

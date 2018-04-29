@@ -5,7 +5,7 @@
 # stop immediately on errors
 set -e
 
-VERSION='0.8.2'
+VERSION='0.9'
 SUITED_SH="$0"
 REPO_TEST_CACHE=$( mktemp -d '/tmp/suited.repotest.XXXXX' )
 CURL_TEMP_FILE=$( mktemp '/tmp/suited.curl.XXXXX' )

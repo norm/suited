@@ -719,6 +719,7 @@ function setup_from_directory {
 function execute_shell_script {
     local script=$( resolve_filename "$1" )
     local attempt="${2:-no}"
+    local url
 
     case "$script" in
         http:*|https:*|github:*)

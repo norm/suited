@@ -67,6 +67,14 @@ function debug {
         || true
 }
 
+function deprecated {
+    local version="$1"
+    local text="$2"
+
+    status "Deprecation warning: ${text}"
+    status "This will be removed by version ${version}."
+}
+
 function usage {
     cat << EOF | sed -e 's/^        //'
         Usage:
@@ -291,6 +299,39 @@ function is_public_repo {
 
     touch "$cache.private"
     return 1
+}
+
+function check_url {
+    local url="$1"
+    local curlargs
+
+    case "$1" in
+        github:*)
+            local repo=$( echo "$1" | awk -F: '{ print $2 }' )
+            local path=$( echo "$1" | awk -F: '{ print $3 }' )
+            local rev=$( echo "$repo" | awk -F@ '{ print $2 }' )
+
+            if [ -n "$rev" ]; then
+                repo=$( echo "$repo" | awk -F@ '{ print $1 }' )
+            else
+                rev='master'
+            fi
+
+            if is_public_repo $repo; then
+                url=$( resolve_public_github_url "$repo" "$path" "$rev" )
+            else
+                url=$( resolve_private_github_url "$repo" "$path" "$rev" )
+                curlargs="-H 'Authorization: token $GITHUB_TOKEN' "
+                curlargs="$curlargs -H 'Accept: application/vnd.github.v3.raw'"
+            fi
+            ;;
+
+        *)  # use as-is
+            ;;
+    esac
+
+    debug "curl --fail --head $curlargs $url"
+    eval curl --fail --head $curlargs "$url" >/dev/null 2>/dev/null
 }
 
 function fetch_url {
@@ -629,35 +670,47 @@ function setup_from_directory {
 
     case "$directory" in
         http:*|https:*|github:*)
-            process_brewfile "${directory}Brewfile" try
-            execute_shell_script "${directory}bootstrap" try
-            add_to_crontab "${directory}crontab" try
+            if check_url "${directory}suitfile"; then
+                process_suitfile "${directory}suitfile"
+            else
+                deprecated 1.0 "Use of dir/ without a suitfile"
+
+                process_brewfile "${directory}Brewfile" try
+                execute_shell_script "${directory}bootstrap" try
+                add_to_crontab "${directory}crontab" try
+            fi
             ;;
 
         *)  # local directory
             silent_pushd "$directory"
-
-            # install any homebrew dependencies
-            [ -f Brewfile ] && \
-                process_brewfile "${directory}/Brewfile"
-
-            if [ -f script/bootstrap ]; then
-                # run the bootstrap script, if there is one...
-                execute_shell_script "${directory}/script/bootstrap"
-            elif [ -f bootstrap ]; then
-                execute_shell_script "${directory}/bootstrap"
+            if [ -f suitfile ]; then
+                process_suitfile "${directory}/suitfile"
             else
-                # ...otherwise initialise things that look initialisable
-                [ -f .ruby-version ] && \
-                    install_ruby_version
-                [ -f Gemfile ] && \
-                    process_gemfile "${directory}/Gemfile"
+                # install any homebrew dependencies
+                deprecated 1.0 "Use of dir/ without a suitfile"
+
+                if [ -f Brewfile ]; then
+                    process_brewfile "${directory}/Brewfile"
+                fi
+
+                if [ -f script/bootstrap ]; then
+                    # run the bootstrap script, if there is one...
+                    execute_shell_script "${directory}/script/bootstrap"
+                elif [ -f bootstrap ]; then
+                    execute_shell_script "${directory}/bootstrap"
+                else
+                    # ...otherwise initialise things that look initialisable
+                    [ -f .ruby-version ] && \
+                        install_ruby_version
+                    [ -f Gemfile ] && \
+                        process_gemfile "${directory}/Gemfile"
+                fi
+
+                # lines to add to the crontab
+                if [ -f crontab ]; then
+                    add_to_crontab "${directory}/crontab"
+                fi
             fi
-
-            # lines to add to the crontab
-            [ -f crontab ] && \
-                add_to_crontab "${directory}/crontab"
-
             silent_popd
             ;;
     esac

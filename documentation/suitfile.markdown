@@ -73,8 +73,21 @@ It can contain:
 
   * **directories**
 
-    Any line that ends `/` is checked for the following files which are
-    automatically applied, and in this order:
+    Any line that ends `/` is assumed to be a directory which contains a
+    `suitfile`. This will be processed by suited before continuing in
+    the current suitfile.
+
+    This is an easy way to organise subsets of suited configuration, for
+    example by application, user, project or hostname.
+
+    *Deprecated behaviour*
+
+    Previously, the directory would be processed as documented below. This
+    will still occur if and only if no `suitfile` exists in the directory.
+    `suited` will issue a deprecation warning for every such directory found.
+
+    The directory is checked for the following files which are automatically
+    applied, and in this order:
 
       * `Brewfile` — if this exists, `suited` will use it to install any
         software dependencies

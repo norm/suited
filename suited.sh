@@ -956,9 +956,9 @@ while getopts "dhnuvx" option; do
         n)  SUDO=0;;
         u)  update_version; exit;;
         v)  report_version;;
+        x)  set -x;;
         ?|h) 
             usage;;
-        x)  set -x;;
     esac
 done
 shift $(( OPTIND - 1 ))

@@ -9,6 +9,7 @@ checklist below into it, then complete each item.
 - [ ] Update the changelog with the new version number
 - [ ] Update `suited.sh` with the new version number
 - [ ] PR/merge the release branch
-- [ ] Tag the merge commit with the new version
+- [ ] Add a new release https://github.com/norm/suited/releases/new using
+      the changelog as the description
 - [ ] Checkout the `latest` branch, `git merge --ff-only master`, and push
 - [ ] Close this issue as done

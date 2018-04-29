@@ -1,0 +1,33 @@
+# This is a suitfile showing examples of all of suited's output types.
+
+echo
+action These are examples of all of suited's output types:
+echo
+
+inform This is "inform" output. It is stored during the suited run, and then
+inform output at the end. It is unstyled and not indented, but always 
+inform preceded by an action line saying "Post-install information:".
+
+echo This is "echo" output. It is unstyled text, which is not indented.
+echo Without arguments it will output a blank line.
+echo
+
+debug This is "debug" output. It is used to output debugging when suited is is
+debug running with the "-d" flag. It can be used in suitfiles, but then it will
+debug output text even without the "-d" flag. It is cyan, and indented by spaces.
+echo
+
+status This is "status" output. It is used for feedback that is neither success
+status or failure, such as warning messages. It is blue, and indented with dashes.
+echo
+
+action This is "action" output. It is used to state when suited is processing
+action a new file. It is yellow, and indented with equals.
+echo
+
+error This is "error" output. It is used to report things that are incorrect,
+error or broken. It will not cause suited to exit (that is done with "abort").
+error It is magenta, and indented with asterisks.
+echo
+
+success This is "success" output. It is green, and not indented.

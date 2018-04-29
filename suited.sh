@@ -31,20 +31,25 @@ HOST="${HOST:=$(hostname -s)}"
 bold="\e[1m"
 cyan="\e[36m"
 yellow="\e[33m"
+blue="\e[34m"
 green="\e[32m"
 magenta="\e[35m"
 reset="\e[0m"
 
 function action {
-    printf "${green}=== ${1}${reset}\n" >&2
+    printf "${yellow}=== ${1}${reset}\n" >&2
 }
 
 function status {
-    printf "${cyan}--- ${1}${reset}\n" >&2
+    printf "${blue}--- ${1}${reset}\n" >&2
 }
 
 function error {
     printf "${bold}${magenta}*** ${1}${reset}\n" >&2
+}
+
+function success {
+    printf "${green}${1}${reset}\n" >&2
 }
 
 function abort {
@@ -52,9 +57,13 @@ function abort {
     exit 1
 }
 
+function debug_output {
+    printf "${cyan}    ${*}${reset}\n" >&2
+}
+
 function debug {
     [ $DEBUG -eq 1 ] \
-        && printf "${bold}${yellow}    ${*}${reset}\n" >&2 \
+        && debug_output "$*" \
         || true
 }
 
@@ -167,16 +176,11 @@ function cleanup {
     if [ "$info_length" -gt 0 ]; then
         echo ''
         action "Post-install information:"
-        printf $yellow
         cat $INFO_TEMP_FILE
-        printf $reset
+        echo ''
     fi
 
-    if [ -z "$ERRORS" ]; then
-        echo ''
-        action 'All done, suited is finished.'
-        action 'Your computer is now ready to go!'
-    elif [ "$ERRORS" == 'probably' ]; then
+    if [ "$ERRORS" == 'probably' ]; then
         echo ''
         error 'Something went wrong!'
         error 'Re-running suited may fix things (if it was a temporary error).'
@@ -213,11 +217,10 @@ function add_to_bashrc {
 }
 
 function inform {
-    echo '' >> $INFO_TEMP_FILE
-
     if [ -n "$*" ]; then
-        echo "$@" >> $INFO_TEMP_FILE
+        echo "$*" >> $INFO_TEMP_FILE
     else
+        echo '' >> $INFO_TEMP_FILE
         cat >> $INFO_TEMP_FILE
     fi
 }
@@ -538,6 +541,7 @@ function process_brewfile {
             fi
             ;;
     esac
+    echo ''
 }
 
 function install_ruby_version {
@@ -788,12 +792,35 @@ function process_suitfile {
                 ;;
 
             inform\ *)
-                # report message at the end
-                local message=$(
-                    echo "$line" \
-                        | cut -d ' ' -f2-
-                )
-                inform "$message"
+                inform "$(echo "$line" | sed -e 's/^inform *//')"
+                ;;
+
+            echo*)
+                echo "$(echo "$line" | sed -e 's/^echo *//')"
+                ;;
+
+            action\ *)
+                action "$(echo "$line" | sed -e 's/^action *//')"
+                ;;
+
+            status\ *)
+                status "$(echo "$line" | sed -e 's/^status *//')"
+                ;;
+
+            error\ *)
+                error "$(echo "$line" | sed -e 's/^error *//')"
+                ;;
+
+            abort\ *)
+                abort "$(echo "$line" | sed -e 's/^abort *//')"
+                ;;
+
+            debug\ *)
+                debug_output "$(echo "$line" | sed -e 's/^debug *//')"
+                ;;
+
+            success\ *)
+                success "$(echo "$line" | sed -e 's/^success *//')"
                 ;;
 
             repo\ *)

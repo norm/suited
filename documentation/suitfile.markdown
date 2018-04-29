@@ -125,11 +125,20 @@ It can contain:
 
     The second argument is the name of the application.
 
-  * **other suitfiles**
+  * **text output**
 
-    Any other line is interpreted to mean another suited configuration file, and
-    its contents are processed before `suited` continues with the current
-    configuration file.
+    Suited outputs text formatted in various different ways. These can be
+    used in suitfiles:
+
+    * `echo` outputs text
+    * `debug` outputs text styled as suited debugging
+    * `status` outputs text styled as a status update
+    * `action` outputs text styled as a new action being performed
+    * `error` outputs text styled as an error message
+    * `success` outputs text styled as a success message
+
+    To see examples of the different styles of output available, run 
+    `suited github:norm/suited:output-example.suitfile`.
 
   * **`inform` statements**
 
@@ -139,6 +148,11 @@ It can contain:
         # reminder
         inform Open 1Password and configure it to use Dropbox.
 
+  * **other suitfiles**
+
+    Any other line is interpreted to mean another suited configuration file, and
+    its contents are processed before `suited` continues with the current
+    configuration file.
 
 ## Relative and absolute paths, and URLs
 

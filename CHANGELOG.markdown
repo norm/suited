@@ -17,11 +17,15 @@ breaking changes.
 
 ### Added
 
-* `suited` no longer reexecutes itself, which will reduce errors being
-  reported followed by "all done!", or "all done!" being reported multiple
-  times.
+* `suited` no longer reexecutes itself, which should make for more
+  predictable debugging and execution.
 * More boilerplate filenames (eg. LICENSE) are ignored when appying
   `setup/apply_defaults.sh` and `setup/apply_shortcuts.sh`.
+
+### Changed
+
+* The output of suited has been tweaked (different colours and spacings),
+  and the commands to output formatted text added to the suitfile definition.
 
 ### Fixed
 
@@ -31,6 +35,8 @@ breaking changes.
 ### Removed
 
 * The `homebrew/versions` tap was removed, as it was deprecated by Homebrew.
+* `suited` no longer reports "All done... [etc] ...!" when it exits
+  successfully.
 
 
 0.8.2 — 2017-07-17

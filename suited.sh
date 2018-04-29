@@ -170,7 +170,7 @@ function silent_pushd {
 }
 
 function silent_popd {
-    # pushd reports the stack, this output is not wanted
+    # popd reports the stack, this output is not wanted
     popd >/dev/null
 }
 
@@ -234,25 +234,25 @@ function inform {
 }
 
 function resolve_filename {
-    local suitfile="$1"
+    local filename="$1"
 
-    case "$suitfile" in
+    case "$filename" in
         github:*)
             # automatic github URL
-            echo $suitfile
+            echo $filename
             ;;
 
         http:*|https:*)
             # absolute url
-            echo $suitfile
+            echo $filename
             ;;
 
         /*) # absolute path
-            echo $suitfile
+            echo $filename
             ;;
 
         *)  # relative to the base
-            echo "${BASE}${suitfile}"
+            echo "${BASE}${filename}"
             ;;
     esac
 }
@@ -719,6 +719,7 @@ function setup_from_directory {
 function execute_shell_script {
     local script=$( resolve_filename "$1" )
     local attempt="${2:-no}"
+    local url
 
     case "$script" in
         http:*|https:*|github:*)
@@ -955,9 +956,9 @@ while getopts "dhnuvx" option; do
         n)  SUDO=0;;
         u)  update_version; exit;;
         v)  report_version;;
+        x)  set -x;;
         ?|h) 
             usage;;
-        x)  set -x;;
     esac
 done
 shift $(( OPTIND - 1 ))

@@ -234,25 +234,25 @@ function inform {
 }
 
 function resolve_filename {
-    local suitfile="$1"
+    local filename="$1"
 
-    case "$suitfile" in
+    case "$filename" in
         github:*)
             # automatic github URL
-            echo $suitfile
+            echo $filename
             ;;
 
         http:*|https:*)
             # absolute url
-            echo $suitfile
+            echo $filename
             ;;
 
         /*) # absolute path
-            echo $suitfile
+            echo $filename
             ;;
 
         *)  # relative to the base
-            echo "${BASE}${suitfile}"
+            echo "${BASE}${filename}"
             ;;
     esac
 }

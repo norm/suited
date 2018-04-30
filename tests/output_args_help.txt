@@ -1,0 +1,14 @@
+Usage:
+
+suited [-d] [-n] [-u] [-v] {suitfile | -} [suitfile...]
+
+    -d  turn on debugging
+    -n  turn off sudo attempt
+    -u  update suited
+    -v  show suited version
+
+A suitfile of '-' means to use STDIN (eg. `echo "..." | suited -`).
+Multiple suitfiles can be specified.
+
+Suitfiles are documented on GitHub:
+https://github.com/norm/suited/blob/latest/documentation/suitfile.markdown

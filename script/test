@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export SUITED_SUDO=0
+bats tests/test*.sh

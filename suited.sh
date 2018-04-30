@@ -90,7 +90,7 @@ function usage {
         Multiple suitfiles can be specified.
 
         Suitfiles are documented on GitHub:
-        https://github.com/norm/suited/blob/master/documentation/suitfile.markdown
+        https://github.com/norm/suited/blob/latest/documentation/suitfile.markdown
 EOF
 
     ERRORS=silent

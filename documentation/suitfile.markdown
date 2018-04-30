@@ -152,6 +152,15 @@ It can contain:
 
     The second argument is the name of the application.
 
+  * **environment checks**
+
+    Any line that starts `needenv` will check that the argument is an
+    environment variable containing a value.
+
+        # setup will fail without a valid token
+        needenv GITHUB_TOKEN
+        setup_github.sh
+
   * **text output**
 
     Suited outputs text formatted in various different ways. These can be

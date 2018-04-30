@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+  <title>Bumph</title>
+  <meta http-equiv='Content-Type' content='text/html;charset=utf-8'>
+</head>
+<body>
+
+<h1>bumph.cackhanded.net</h1>
+<blockquote cite='http://en.wikipedia.org/wiki/BUMPH'>
+  <p>The word <q>bumph</q> is also English slang for paper&mdash;of any sort. 
+    It is used on its own as in <q>there&apos;s a whole pile of bumph on my 
+    desk</q>, and also with some other words, eg <q>loo bumph</q> is toilet 
+    paper.</p>
+  <p><q>Bumph</q> or <q>Bumf</q>, when alluding to excessive paperwork was an 
+    armed forces contraction for <q>Bum Fodder</q> during the Second World War 
+    and was in regular use throughout the Commonwealth. <q>Bum fodder</q> was 
+    itself a slang term for toilet paper.</p>
+</blockquote>
+
+</body>
+</html>

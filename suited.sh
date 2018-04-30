@@ -988,6 +988,11 @@ function process_suitfile {
     return 0
 }
 
+[ -n "$SUITED_SUDO" ] && \
+    SUDO="$SUITED_SUDO"
+[ -n "$SUITED_DEBUG" ] && \
+    DEBUG="$SUITED_DEBUG"
+
 while getopts "dhnuvx" option; do
     case $option in
         d)  DEBUG=1;;

@@ -11,6 +11,11 @@ Unreleased
 
 * New suitfile command `symlink` to create symbolic links.
 
+### Changed
+
+* `suited` looks up the latest release (when doing `suited -v` or `suited -u`)
+  from Github's releases data, rather than in the code on `master`.
+
 
 0.9 — 2018-04-29
 ----------------

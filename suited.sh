@@ -968,6 +968,15 @@ function process_suitfile {
                 "
                 ;;
 
+            needenv\ *)
+                local envvar="$(echo "$line" | sed -e 's/^needenv *//')"
+                debug "needs environmet variable ${envvar} set"
+
+                if [ '' = "${!envvar}" ]; then
+                    abort "The environment variable ${envvar} needs to be set."
+                fi
+                ;;
+
             *)  process_line "$line"
                 ;;
         esac

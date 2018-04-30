@@ -10,6 +10,7 @@ Unreleased
 ### Added
 
 * New suitfile command `symlink` to create symbolic links.
+* New suitfile command `needenv` to check an environment variable has a value.
 
 ### Changed
 

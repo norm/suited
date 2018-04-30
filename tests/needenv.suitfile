@@ -1,0 +1,2 @@
+needenv BANANA
+echo BANANA is set

@@ -1,4 +1,16 @@
 #!/bin/bash
 
+# use a temporary homedir
+TEMP_HOME=$(mktemp -d)
+export HOME="$TEMP_HOME"
+
+# don't bother trying to sudo
 export SUITED_SUDO=0
+
+# no GITHUB_TOKEN
+export GITHUB_TOKEN=''
+
+
 bats tests/test*.sh
+
+rm -rf $TEMP_HOME

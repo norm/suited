@@ -3,6 +3,11 @@
 # use a temporary homedir
 TEMP_HOME=$(mktemp -d)
 export HOME="$TEMP_HOME"
+function cleanup {
+    rm -rf $TEMP_HOME
+}
+trap cleanup EXIT
+
 
 # don't bother trying to sudo
 export SUITED_SUDO=0
@@ -12,5 +17,3 @@ export GITHUB_TOKEN=''
 
 
 bats tests/test*.sh
-
-rm -rf $TEMP_HOME
